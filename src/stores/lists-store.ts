@@ -163,7 +163,10 @@ export const useListsStore = create<ListsStore>()(
             throw new Error("Failed to update list");
           }
 
+          // Get the updated list with all items from the API
           const updatedList = await response.json();
+
+          // Update the store with the complete response from the API
           set((state) => ({
             lists: state.lists.map((list) =>
               list.id === id ? updatedList : list
@@ -305,13 +308,33 @@ export const useListsStore = create<ListsStore>()(
           }
 
           const updatedItem = await response.json();
+
+          // Update both the item and its parent list
           set((state) => ({
-            lists: state.lists.map((list) => ({
-              ...list,
-              items: list.items.map((item) =>
-                item.id === itemId ? updatedItem : item
-              ),
-            })),
+            lists: state.lists.map((list) => {
+              // Check if this list contains the updated item
+              const hasItem = list.items.some((item) => item.id === itemId);
+              if (!hasItem) return list;
+
+              // Update list completion status if provided in the response
+              if (updatedItem.list?.isCompleted !== undefined) {
+                return {
+                  ...list,
+                  isCompleted: updatedItem.list.isCompleted,
+                  items: list.items.map((item) =>
+                    item.id === itemId ? updatedItem : item
+                  ),
+                };
+              }
+
+              // Otherwise just update the item
+              return {
+                ...list,
+                items: list.items.map((item) =>
+                  item.id === itemId ? updatedItem : item
+                ),
+              };
+            }),
           }));
         } catch (error) {
           // Revert optimistic update on error
