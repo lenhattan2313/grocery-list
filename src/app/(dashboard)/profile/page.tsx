@@ -47,7 +47,7 @@ export default async function ProfilePage() {
                 </p>
                 <p className="text-sm text-gray-600">Admin</p>
               </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                 You
               </span>
             </div>

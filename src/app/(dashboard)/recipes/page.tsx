@@ -23,7 +23,7 @@ export default async function RecipesPage() {
               Chicken Stir Fry
             </h3>
             <p className="text-gray-600 text-sm mb-4">30 min • 4 servings</p>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+            <button className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition-colors">
               Add to Shopping List
             </button>
           </div>
@@ -38,7 +38,7 @@ export default async function RecipesPage() {
               Pasta Carbonara
             </h3>
             <p className="text-gray-600 text-sm mb-4">20 min • 2 servings</p>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
+            <button className="w-full bg-primary text-primary-foreground py-2 px-4 rounded-md hover:bg-primary/90 transition-colors">
               Add to Shopping List
             </button>
           </div>

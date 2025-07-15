@@ -26,7 +26,7 @@ export function Navigation() {
               className={cn(
                 "flex flex-col items-center py-2 px-3 text-sm font-medium transition-colors md:flex-row md:py-2 md:px-4 md:rounded-lg",
                 isActive
-                  ? "text-blue-600 bg-blue-50 md:bg-blue-50"
+                  ? "text-primary bg-primary/10 md:bg-primary/10"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               )}
             >
