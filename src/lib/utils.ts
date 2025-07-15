@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 // Helper function to get progress colors based on percentage
@@ -14,7 +14,7 @@ export function getProgressColors(percentage: number) {
     };
   } else if (percentage > 0 && percentage < 100) {
     return {
-      textColor: "text-orange-600", 
+      textColor: "text-orange-600",
       progressColor: "bg-orange-500",
     };
   } else {
@@ -23,4 +23,12 @@ export function getProgressColors(percentage: number) {
       progressColor: "bg-gray-500",
     };
   }
+}
+
+export function getTimeBasedGreeting() {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
 }

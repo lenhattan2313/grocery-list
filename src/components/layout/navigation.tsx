@@ -24,13 +24,15 @@ export function Navigation() {
               key={item.name}
               href={item.href}
               className={cn(
-                "flex flex-col items-center py-2 px-3 text-sm font-medium transition-colors md:flex-row md:py-2 md:px-4 md:rounded-lg",
+                "flex flex-col items-center py-2 px-3 text-sm transition-colors md:flex-row md:py-2 md:px-4 md:rounded-lg",
                 isActive
-                  ? "text-primary bg-primary/10 md:bg-primary/10"
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  ? "text-primary font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <item.icon className="h-6 w-6 md:h-5 md:w-5 md:mr-2" />
+              <div className="flex items-center justify-center w-10 h-6 md:w-8 md:h-6 md:mr-2">
+                <item.icon className="h-5 w-5 md:h-4 md:w-4" />
+              </div>
               <span className="mt-1 md:mt-0">{item.name}</span>
             </Link>
           );

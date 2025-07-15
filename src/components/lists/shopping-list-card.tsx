@@ -12,14 +12,7 @@ import {
 import { cn, getProgressColors } from "@/lib/utils";
 import { dialogService } from "@/stores/dialog-store";
 import { ShoppingList, useListsStore } from "@/stores/lists-store";
-import {
-  CheckCircle,
-  Circle,
-  Edit,
-  MoreHorizontal,
-  ShoppingCart,
-  Trash2,
-} from "lucide-react";
+import { Edit, MoreVertical, ShoppingCart, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface ShoppingListCardProps {
@@ -34,7 +27,7 @@ export function ShoppingListCard({
   onViewList,
 }: ShoppingListCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const { deleteList, updateList, getListProgress } = useListsStore();
+  const { deleteList, getListProgress } = useListsStore();
 
   const progress = getListProgress(list.id);
 
@@ -72,21 +65,6 @@ export function ShoppingListCard({
     });
   };
 
-  const handleToggleComplete = async () => {
-    const newCompletionStatus = !list.isCompleted;
-
-    try {
-      // Update the list completion status and all items in a single API call
-      await updateList(list.id, {
-        isCompleted: newCompletionStatus,
-        updateItemsCompletion: true,
-      });
-    } catch (error) {
-      console.error("Failed to toggle list completion:", error);
-      // The store will handle reverting optimistic updates on error
-    }
-  };
-
   const handleCardClick = () => {
     if (onViewList) {
       onViewList(list);
@@ -97,15 +75,24 @@ export function ShoppingListCard({
     <Card
       className={cn(
         "cursor-pointer transition-all hover:shadow-md",
-        list.isCompleted && "opacity-75 bg-gray-50"
+        list.isCompleted && "p-0"
       )}
       onClick={handleCardClick}
     >
-      <CardHeader className={cn("pb-3", list.isCompleted && "pb-4")}>
+      <CardHeader className={cn("pb-3", list.isCompleted && "p-3 pl-6")}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5 text-gray-500" />
-            <CardTitle className="text-lg">{list.name}</CardTitle>
+            <CardTitle
+              className={cn(
+                "text-lg",
+                list.isCompleted && "line-through text-gray-500"
+              )}
+            >
+              {list.name}
+            </CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
             {list.isCompleted && (
               <Badge
                 variant="secondary"
@@ -114,23 +101,6 @@ export function ShoppingListCard({
                 Completed
               </Badge>
             )}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggleComplete();
-              }}
-              className="h-8 w-8 p-0"
-            >
-              {list.isCompleted ? (
-                <CheckCircle className="h-4 w-4 text-green-600" />
-              ) : (
-                <Circle className="h-4 w-4 text-gray-400" />
-              )}
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -139,7 +109,7 @@ export function ShoppingListCard({
                   className="h-8 w-8 p-0"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -168,18 +138,6 @@ export function ShoppingListCard({
             </DropdownMenu>
           </div>
         </div>
-        {list.isCompleted && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <div className="text-xs text-gray-400">
-              Completed on{" "}
-              {new Date(list.createdAt).toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })}
-            </div>
-          </div>
-        )}
       </CardHeader>
       {!list.isCompleted && (
         <CardContent>
