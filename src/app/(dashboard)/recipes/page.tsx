@@ -1,8 +1,4 @@
-import { auth } from "@/lib/auth";
-
 export default async function RecipesPage() {
-  const session = await auth();
-
   return (
     <div>
       <div className="mb-8">

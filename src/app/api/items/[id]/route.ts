@@ -17,7 +17,7 @@ const UpdateItemSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -25,7 +25,7 @@ export async function PUT(
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    const params = await context.params;
     const body = await request.json();
     const validatedData = UpdateItemSchema.parse(body);
 
@@ -150,14 +150,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    const params = await context.params;
     // Verify the item belongs to the user's list
     const item = await prisma.shoppingItem.findFirst({
       where: {

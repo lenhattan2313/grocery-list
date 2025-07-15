@@ -15,14 +15,14 @@ const UpdateListSchema = z.object({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    const params = await context.params;
     const list = await prisma.shoppingList.findFirst({
       where: {
         id: params.id,
@@ -53,14 +53,14 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    const params = await context.params;
     const body = await request.json();
     const validatedData = UpdateListSchema.parse(body);
 
@@ -93,7 +93,7 @@ export async function PUT(
         },
       });
 
-      // If updateItemsCompletion is true and isCompleted is being updated, 
+      // If updateItemsCompletion is true and isCompleted is being updated,
       // update all items to match the list's completion status
       if (updateItemsCompletion && validatedData.isCompleted !== undefined) {
         await tx.shoppingItem.updateMany({
@@ -127,7 +127,7 @@ export async function PUT(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid input", details: error.errors },
+        { error: "Invalid input", details: error.format() },
         { status: 400 }
       );
     }
@@ -142,14 +142,14 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
+    const params = await context.params;
     const list = await prisma.shoppingList.findFirst({
       where: {
         id: params.id,
