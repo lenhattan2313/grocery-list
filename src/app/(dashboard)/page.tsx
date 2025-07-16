@@ -8,10 +8,13 @@ import { EditListDialog } from "@/components/lists/edit-list-dialog";
 import { ListDetailsDrawer } from "@/components/lists/list-details-drawer";
 import { Loader2, AlertCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/common/page-header";
+import { FloatingActionButton } from "@/components/common/floating-action-button";
 
 export default function ListsPage() {
   const [editingList, setEditingList] = useState<ShoppingList | null>(null);
   const [viewingListId, setViewingListId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { lists, loading, error, fetchLists, clearError } = useListsStore();
 
   useEffect(() => {
@@ -31,6 +34,10 @@ export default function ListsPage() {
     fetchLists();
   };
 
+  const filteredLists = lists.filter((list) =>
+    list.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading && lists.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -44,11 +51,7 @@ export default function ListsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900">Shopping Lists</h2>
-        </div>
-      </div>
+      <PageHeader title="List" onSearch={setSearchQuery} className="mb-4" />
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -70,25 +73,30 @@ export default function ListsPage() {
         </div>
       )}
 
-      {lists.length === 0 && !loading && !error ? (
+      {filteredLists.length === 0 && !loading && !error ? (
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
             <Plus className="h-16 w-16 mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No shopping lists yet
+              {searchQuery
+                ? "No matching lists found"
+                : "No shopping lists yet"}
             </h3>
             <p className="text-gray-600 mb-6">
-              Get started by creating your first shopping list. Add items, track
-              your progress, and never forget what you need to buy!
+              {searchQuery
+                ? "Try adjusting your search terms or clear the search to see all lists."
+                : "Get started by creating your first shopping list. Add items, track your progress, and never forget what you need to buy!"}
             </p>
-            <p className="text-gray-500 text-sm">
-              Click the + button in the bottom right to get started
-            </p>
+            {!searchQuery && (
+              <p className="text-gray-500 text-sm">
+                Click the + button in the bottom right to get started
+              </p>
+            )}
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {lists.map((list) => (
+          {filteredLists.map((list) => (
             <ShoppingListCard
               key={list.id}
               list={list}
@@ -100,13 +108,7 @@ export default function ListsPage() {
       )}
 
       {/* Floating Add Button */}
-      <Button
-        onClick={showAddListDialog}
-        className="fixed bottom-20 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-10"
-        size="icon"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      <FloatingActionButton onClick={showAddListDialog} icon={Plus} />
 
       {/* Edit List Dialog */}
       <EditListDialog
