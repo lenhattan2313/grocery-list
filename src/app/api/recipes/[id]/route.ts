@@ -5,20 +5,20 @@ import { CreateRecipeForm } from "@/types";
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    const { id } = await context.params;
     const body = (await req.json()) as CreateRecipeForm;
 
     // Check if recipe exists and user has access
     const existingRecipe = await prisma.recipe.findFirst({
       where: {
-        id: params.id,
+        id,
         OR: [
           { userId: session.user.id },
           {
@@ -41,13 +41,13 @@ export async function PUT(
     // Delete existing ingredients and create new ones
     await prisma.recipeIngredient.deleteMany({
       where: {
-        recipeId: params.id,
+        recipeId: id,
       },
     });
 
     const recipe = await prisma.recipe.update({
       where: {
-        id: params.id,
+        id,
       },
       data: {
         name: body.name,
@@ -77,19 +77,19 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  _req: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    const { id } = await context.params;
     // Check if recipe exists and user has access
     const existingRecipe = await prisma.recipe.findFirst({
       where: {
-        id: params.id,
+        id,
         OR: [
           { userId: session.user.id },
           {
@@ -112,13 +112,12 @@ export async function DELETE(
     // Delete recipe and its ingredients (cascade delete should handle this)
     await prisma.recipe.delete({
       where: {
-        id: params.id,
+        id,
       },
     });
 
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error("[RECIPE_DELETE]", error);
+  } catch {
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

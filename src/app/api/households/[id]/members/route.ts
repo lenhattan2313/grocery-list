@@ -12,18 +12,18 @@ const memberSchema = z.object({
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    const { id } = await context.params;
     // Verify user is admin of household
     const household = await prisma.household.findFirst({
       where: {
-        id: params.id,
+        id,
         members: {
           some: {
             userId: session.user.id,
@@ -52,7 +52,7 @@ export async function POST(
     // Check if user is already a member
     const existingMember = await prisma.householdMember.findFirst({
       where: {
-        householdId: params.id,
+        householdId: id,
         userId: user.id,
       },
     });
@@ -65,7 +65,7 @@ export async function POST(
     const member = await prisma.householdMember.create({
       data: {
         userId: user.id,
-        householdId: params.id,
+        householdId: id,
         role: validatedData.role,
         dietaryRestrictions: validatedData.dietaryRestrictions,
         allergies: validatedData.allergies,
@@ -93,18 +93,18 @@ export async function POST(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    const { id } = await context.params;
     // Verify user is member of household
     const members = await prisma.householdMember.findMany({
       where: {
-        householdId: params.id,
+        householdId: id,
         household: {
           members: {
             some: {

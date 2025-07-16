@@ -3,19 +3,19 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
+  _req: Request,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    const { id } = await context.params;
     // Check if recipe exists and user has access
     const recipe = await prisma.recipe.findFirst({
       where: {
-        id: params.id,
+        id,
         OR: [
           { userId: session.user.id },
           {
@@ -59,8 +59,7 @@ export async function POST(
     });
 
     return NextResponse.json(shoppingList);
-  } catch (error) {
-    console.error("[RECIPE_TO_LIST]", error);
+  } catch {
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

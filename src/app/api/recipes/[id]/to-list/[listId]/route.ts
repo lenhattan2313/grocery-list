@@ -4,21 +4,21 @@ import { prisma } from "@/lib/db";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string; listId: string } }
+  context: { params: Promise<{ id: string; listId: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    const { id, listId } = await context.params;
     // Get selected ingredient IDs from request body
     const { selectedIngredientIds } = await req.json();
 
     // Check if recipe exists and user has access
     const recipe = await prisma.recipe.findFirst({
       where: {
-        id: params.id,
+        id,
         OR: [
           { userId: session.user.id },
           {
@@ -51,7 +51,7 @@ export async function POST(
     // Check if list exists and user has access
     const list = await prisma.shoppingList.findFirst({
       where: {
-        id: params.listId,
+        id: listId,
         userId: session.user.id,
       },
     });
@@ -63,7 +63,7 @@ export async function POST(
     // Add recipe ingredients to the existing list
     const updatedList = await prisma.shoppingList.update({
       where: {
-        id: params.listId,
+        id: listId,
       },
       data: {
         items: {
@@ -81,8 +81,7 @@ export async function POST(
     });
 
     return NextResponse.json(updatedList);
-  } catch (error) {
-    console.error("[RECIPE_TO_LIST]", error);
+  } catch {
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

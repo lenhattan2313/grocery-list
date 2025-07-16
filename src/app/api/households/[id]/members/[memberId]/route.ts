@@ -11,18 +11,18 @@ const updateSchema = z.object({
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string; memberId: string } }
+  context: { params: Promise<{ id: string; memberId: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    const { id, memberId } = await context.params;
     // Verify user is admin of household
     const household = await prisma.household.findFirst({
       where: {
-        id: params.id,
+        id,
         members: {
           some: {
             userId: session.user.id,
@@ -42,8 +42,8 @@ export async function PATCH(
     // Update member
     const member = await prisma.householdMember.update({
       where: {
-        id: params.memberId,
-        householdId: params.id,
+        id: memberId,
+        householdId: id,
       },
       data: validatedData,
       include: {
@@ -68,19 +68,19 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string; memberId: string } }
+  _request: Request,
+  context: { params: Promise<{ id: string; memberId: string }> }
 ) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    const { id, memberId } = await context.params;
     // Verify user is admin of household
     const household = await prisma.household.findFirst({
       where: {
-        id: params.id,
+        id,
         members: {
           some: {
             userId: session.user.id,
@@ -96,13 +96,13 @@ export async function DELETE(
 
     // Check if trying to remove the last admin
     const member = await prisma.householdMember.findUnique({
-      where: { id: params.memberId },
+      where: { id: memberId },
     });
 
     if (member?.role === "admin") {
       const adminCount = await prisma.householdMember.count({
         where: {
-          householdId: params.id,
+          householdId: id,
           role: "admin",
         },
       });
@@ -118,13 +118,13 @@ export async function DELETE(
     // Delete member
     await prisma.householdMember.delete({
       where: {
-        id: params.memberId,
-        householdId: params.id,
+        id: memberId,
+        householdId: id,
       },
     });
 
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
+  } catch {
     return new NextResponse("Internal error", { status: 500 });
   }
 }
