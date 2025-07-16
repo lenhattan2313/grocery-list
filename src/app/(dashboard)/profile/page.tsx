@@ -1,11 +1,29 @@
 import { auth } from "@/lib/auth";
+import { HouseholdSection } from "@/components/profile/household-section";
+import { Card } from "@/components/ui/card";
+import { redirect } from "next/navigation";
+import { getHousehold, createHousehold } from "@/app/actions/household";
 
 export default async function ProfilePage() {
   const session = await auth();
+  if (!session?.user?.id || !session?.user?.email) {
+    redirect("/signin");
+  }
+
+  // Get user's household with members
+  let household = await getHousehold();
+
+  // If no household exists, create one for the user
+  if (!household) {
+    household = await createHousehold();
+    if (household) {
+      return redirect("/profile");
+    }
+  }
 
   return (
-    <div>
-      <div className="mb-8">
+    <div className="space-y-8">
+      <div>
         <h2 className="text-3xl font-bold text-gray-900">Profile</h2>
         <p className="text-gray-600 mt-2">
           Manage your profile and family members
@@ -14,7 +32,7 @@ export default async function ProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* User Profile Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Your Profile
           </h3>
@@ -23,39 +41,26 @@ export default async function ProfilePage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Name
               </label>
-              <p className="text-gray-900">{session?.user?.name}</p>
+              <p className="text-gray-900">
+                {session.user.name || "No name set"}
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email
               </label>
-              <p className="text-gray-900">{session?.user?.email}</p>
+              <p className="text-gray-900">{session.user.email}</p>
             </div>
           </div>
-        </div>
+        </Card>
 
-        {/* Family Members Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Family Members
-          </h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <p className="font-medium text-gray-900">
-                  {session?.user?.name}
-                </p>
-                <p className="text-sm text-gray-600">Admin</p>
-              </div>
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                You
-              </span>
-            </div>
-            <button className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors">
-              + Add Family Member
-            </button>
-          </div>
-        </div>
+        {/* Household Section */}
+        {household && (
+          <HouseholdSection
+            currentUserId={session.user.id}
+            household={household}
+          />
+        )}
       </div>
     </div>
   );
