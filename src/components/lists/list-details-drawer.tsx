@@ -252,6 +252,7 @@ export function ListDetailsDrawer({
                   disabled={isAdding}
                   className="shrink-0"
                   size="sm"
+                  aria-label="Add Item"
                 >
                   {isAdding ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -353,6 +354,7 @@ export function ListDetailsDrawer({
                               size="sm"
                               disabled={isLoading}
                               className="h-8 w-8 p-0"
+                              aria-label="Save Edit"
                             >
                               {isSubmittingEdit ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -367,6 +369,7 @@ export function ListDetailsDrawer({
                               onClick={handleCancelEdit}
                               disabled={isLoading}
                               className="h-8 w-8 p-0"
+                              aria-label="Cancel Edit"
                             >
                               <X className="h-4 w-4" />
                             </Button>
@@ -473,11 +476,13 @@ export function ListDetailsDrawer({
                               handleEditItem(item);
                             }}
                             className="h-8 w-8 p-0"
+                            aria-label="Edit Item"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
+                            aria-label="Delete Item"
                             size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -503,6 +508,7 @@ export function ListDetailsDrawer({
               size="lg"
               onClick={handleSaveChanges}
               disabled={updateListItemsMutation.isPending}
+              aria-label="Save Changes"
             >
               {updateListItemsMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

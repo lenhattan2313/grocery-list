@@ -176,7 +176,10 @@ export function FamilyMemberDialog({
             />
 
             <DialogFooter>
-              <Button type="submit">
+              <Button
+                type="submit"
+                aria-label={isEditing ? "Update Member" : "Add Member"}
+              >
                 {isEditing ? "Update Member" : "Add Member"}
               </Button>
             </DialogFooter>

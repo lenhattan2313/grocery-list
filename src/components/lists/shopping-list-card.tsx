@@ -213,6 +213,7 @@ export function ShoppingListCard({ list, onViewList }: ShoppingListCardProps) {
                 e.stopPropagation();
                 handleCancel();
               }}
+              aria-label="Cancel"
             >
               Cancel
             </Button>
@@ -222,6 +223,7 @@ export function ShoppingListCard({ list, onViewList }: ShoppingListCardProps) {
                 e.stopPropagation();
                 handleSave();
               }}
+              aria-label="Save"
             >
               Save
             </Button>
@@ -235,6 +237,11 @@ export function ShoppingListCard({ list, onViewList }: ShoppingListCardProps) {
               handleToggleComplete();
             }}
             disabled={updateMutation.isPending}
+            aria-label={
+              optimisticList.isCompleted
+                ? "Mark as Incomplete"
+                : "Mark as Complete"
+            }
           >
             <Check className="mr-2 h-4 w-4" />
             <span>

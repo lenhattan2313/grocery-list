@@ -50,10 +50,15 @@ function AddListForm({ onSubmit, onCancel, isSubmitting }: AddListFormProps) {
           variant="outline"
           onClick={handleCancel}
           disabled={isSubmitting}
+          aria-label="Cancel"
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={!name.trim() || isSubmitting}>
+        <Button
+          type="submit"
+          disabled={!name.trim() || isSubmitting}
+          aria-label="Create List"
+        >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -121,7 +121,7 @@ export function HouseholdSection({
             {household.members.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Button onClick={handleAdd} size="sm">
+        <Button onClick={handleAdd} size="sm" aria-label="Add Member">
           <Plus className="h-4 w-4 mr-2" />
           Add Member
         </Button>

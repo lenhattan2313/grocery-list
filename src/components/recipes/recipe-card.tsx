@@ -8,15 +8,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Recipe } from "@/types";
+import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
 import Image from "next/image";
 
 interface RecipeCardProps {
-  recipe: Recipe;
-  onEdit?: (recipe: Recipe) => void;
-  onDelete?: (recipe: Recipe) => void;
-  onAddToList?: (recipe: Recipe) => void;
-  onView?: (recipe: Recipe) => void;
+  recipe: RecipeWithIngredients;
+  onEdit?: (recipe: RecipeWithIngredients) => void;
+  onDelete?: (recipe: RecipeWithIngredients) => void;
+  onAddToList?: (recipe: RecipeWithIngredients) => void;
+  onView?: (recipe: RecipeWithIngredients) => void;
+  isPriority?: boolean;
 }
 
 export function RecipeCard({
@@ -25,6 +26,7 @@ export function RecipeCard({
   onDelete,
   onAddToList,
   onView,
+  isPriority,
 }: RecipeCardProps) {
   return (
     <Card className="w-full overflow-hidden gap-4 pt-0">
@@ -37,7 +39,8 @@ export function RecipeCard({
             className="object-cover rounded-t-lg"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             quality={80}
-            loading="lazy"
+            priority={isPriority}
+            loading={isPriority ? "eager" : "lazy"}
           />
         </div>
       )}
@@ -56,6 +59,7 @@ export function RecipeCard({
             variant="default"
             className="flex-1"
             onClick={() => onAddToList(recipe)}
+            aria-label="Add to List"
           >
             Add to List
           </Button>
@@ -65,6 +69,7 @@ export function RecipeCard({
             variant="outline"
             className="flex-1"
             onClick={() => onView(recipe)}
+            aria-label="View Recipe"
           >
             View Recipe
           </Button>

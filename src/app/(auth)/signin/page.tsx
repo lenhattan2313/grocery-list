@@ -31,6 +31,7 @@ export default function SignInPage() {
               className="w-full"
               size="lg"
               variant="outline"
+              aria-label="Continue with Google"
             >
               <GoogleLogo className="mr-2 h-5 w-5" />
               Continue with Google

@@ -14,7 +14,7 @@ function SkeletonCard() {
   );
 }
 
-export function ListPageSkeleton() {
+export function PageSkeleton() {
   return (
     <div>
       <PageHeader title="List" className="mb-4" />

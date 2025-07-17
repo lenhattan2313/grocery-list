@@ -3,7 +3,7 @@ import { Suspense } from "react";
 
 import { getLists } from "@/app/actions/list";
 import { ListsPageClient } from "@/app/(dashboard)/list/list-page-client";
-import { ListPageSkeleton } from "@/components/lists/list-page-skeleton";
+import { PageSkeleton } from "@/components/common/page-skeleton";
 import { getQueryClient } from "@/lib/get-query-client";
 import { ShoppingListWithItems } from "@/hooks/use-lists-query";
 
@@ -20,7 +20,7 @@ export default async function ListsPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<ListPageSkeleton />}>
+      <Suspense fallback={<PageSkeleton />}>
         <ListsPageClient initialLists={initialLists} />
       </Suspense>
     </HydrationBoundary>

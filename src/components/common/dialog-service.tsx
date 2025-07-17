@@ -57,6 +57,7 @@ export function DialogService() {
                 onClick={button.onClick}
                 disabled={button.disabled}
                 className={cn(button.loading && "min-w-[100px]")}
+                aria-label={button.label}
               >
                 {button.loading ? (
                   <>

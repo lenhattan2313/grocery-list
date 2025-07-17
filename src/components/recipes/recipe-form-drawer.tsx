@@ -23,7 +23,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { IngredientList } from "./ingredient-list";
-import { CreateRecipeForm, Recipe } from "@/types";
+import { CreateRecipeForm } from "@/types";
+import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Recipe name is required"),
@@ -48,7 +49,7 @@ const recipeFormSchema = z.object({
 
 interface RecipeFormDrawerProps {
   mode: "add" | "edit";
-  recipe?: Recipe;
+  recipe?: RecipeWithIngredients;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: CreateRecipeForm) => Promise<void>;
@@ -83,7 +84,7 @@ export function RecipeFormDrawer({
         name: recipe.name,
         description: recipe.description || "",
         instructions: recipe.instructions,
-        cookingTime: recipe.cookingTime,
+        cookingTime: recipe.cookingTime ?? undefined,
         servings: recipe.servings,
         image: recipe.image || "",
         ingredients: recipe.ingredients.map((i) => ({
@@ -266,6 +267,15 @@ export function RecipeFormDrawer({
             type="submit"
             disabled={isSubmitting}
             onClick={form.handleSubmit(handleSubmit)}
+            aria-label={
+              isSubmitting
+                ? mode === "add"
+                  ? "Creating recipe..."
+                  : "Saving recipe..."
+                : mode === "add"
+                ? "Create recipe"
+                : "Save recipe"
+            }
           >
             {isSubmitting
               ? mode === "add"

@@ -9,7 +9,7 @@ import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
 import { PageHeaderSearch } from "@/components/common/page-header-search";
-import { ListPageSkeleton } from "@/components/lists/list-page-skeleton";
+import { PageSkeleton } from "@/components/common/page-skeleton";
 
 interface ListsPageClientProps {
   initialLists: ShoppingListWithItems[];
@@ -28,7 +28,7 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
   );
 
   if (isLoading) {
-    return <ListPageSkeleton />;
+    return <PageSkeleton />;
   }
 
   if (error) {

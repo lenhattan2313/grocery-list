@@ -1,32 +1,36 @@
-import { useEffect } from "react";
-import { useListsStore } from "@/stores/lists-store";
+import { useListsQuery, ShoppingListWithItems } from "@/hooks/use-lists-query";
 import { Button } from "@/components/ui/button";
 import { dialogService } from "@/stores/dialog-store";
-import { Recipe } from "@/types";
 import { Loader2 } from "lucide-react";
+import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
+import { useAddRecipeToListMutation } from "@/hooks/use-add-recipe-to-list-mutation";
 
 interface RecipeToListFormProps {
-  recipe: Recipe;
-  onSubmit: (listId: string) => Promise<void>;
+  recipe: RecipeWithIngredients;
   onCancel: () => void;
-  isSubmitting: boolean;
-  error: string | null;
+  selectedIngredientIds?: string[];
 }
 
 function RecipeToListForm({
   recipe,
-  onSubmit,
   onCancel,
-  isSubmitting,
-  error,
+  selectedIngredientIds,
 }: RecipeToListFormProps) {
-  const { lists, loading, error: listsError, fetchLists } = useListsStore();
+  const { data: lists, isLoading, isError, error, refetch } = useListsQuery();
+  const { mutate: addRecipeToList, isPending } = useAddRecipeToListMutation();
 
-  useEffect(() => {
-    fetchLists();
-  }, [fetchLists]);
+  const handleSubmit = (listId: string) => {
+    addRecipeToList(
+      { recipeId: recipe.id, listId, selectedIngredientIds },
+      {
+        onSuccess: () => {
+          dialogService.hideDialog("recipe-to-list");
+        },
+      }
+    );
+  };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center p-6">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -34,11 +38,16 @@ function RecipeToListForm({
     );
   }
 
-  if (listsError) {
+  if (isError) {
     return (
       <div className="p-6">
-        <p className="text-destructive">{listsError}</p>
-        <Button onClick={fetchLists} variant="outline" className="mt-4">
+        <p className="text-destructive">{error.message}</p>
+        <Button
+          onClick={() => refetch()}
+          variant="outline"
+          className="mt-4"
+          aria-label="Retry"
+        >
           Retry
         </Button>
       </div>
@@ -47,12 +56,13 @@ function RecipeToListForm({
 
   return (
     <div className="space-y-4 p-6">
-      {error && <p className="text-destructive text-sm">{error}</p>}
-
-      {lists.length === 0 ? (
+      {!lists || lists.length === 0 ? (
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">No shopping lists found.</p>
-          <Button onClick={() => dialogService.hideDialog("recipe-to-list")}>
+          <Button
+            onClick={() => dialogService.hideDialog("recipe-to-list")}
+            aria-label="Create New List"
+          >
             Create New List
           </Button>
         </div>
@@ -62,13 +72,14 @@ function RecipeToListForm({
             Choose a shopping list to add items from &quot;{recipe.name}&quot;:
           </p>
           <div className="grid gap-2">
-            {lists.map((list) => (
+            {lists.map((list: ShoppingListWithItems) => (
               <Button
                 key={list.id}
                 variant="outline"
                 className="w-full justify-start"
-                disabled={isSubmitting}
-                onClick={() => onSubmit(list.id)}
+                disabled={isPending}
+                onClick={() => handleSubmit(list.id)}
+                aria-label={`Add ${recipe.name} to ${list.name}`}
               >
                 {list.name}
               </Button>
@@ -78,7 +89,12 @@ function RecipeToListForm({
       )}
 
       <div className="flex justify-end space-x-2 pt-4">
-        <Button variant="outline" onClick={onCancel} disabled={isSubmitting}>
+        <Button
+          variant="outline"
+          onClick={onCancel}
+          disabled={isPending}
+          aria-label="Cancel"
+        >
           Cancel
         </Button>
       </div>
@@ -87,72 +103,9 @@ function RecipeToListForm({
 }
 
 export function showRecipeToListDialog(
-  recipe: Recipe,
+  recipe: RecipeWithIngredients,
   selectedIngredientIds?: string[]
 ) {
-  let isSubmitting = false;
-
-  const updateSubmittingState = (submitting: boolean) => {
-    isSubmitting = submitting;
-    dialogService.updateDialog("recipe-to-list", {
-      content: (
-        <RecipeToListForm
-          recipe={recipe}
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isSubmitting={isSubmitting}
-          error={null}
-        />
-      ),
-    });
-  };
-
-  const handleSubmit = async (listId: string) => {
-    updateSubmittingState(true);
-    try {
-      const response = await fetch(
-        `/api/recipes/${recipe.id}/to-list/${listId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            selectedIngredientIds:
-              selectedIngredientIds || recipe.ingredients.map((ing) => ing.id),
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to add recipe to list");
-      }
-
-      // Refresh the lists to get the updated items
-      await useListsStore.getState().fetchLists();
-      dialogService.hideDialog("recipe-to-list");
-    } catch (error) {
-      console.error("Failed to add recipe to list:", error);
-      dialogService.updateDialog("recipe-to-list", {
-        content: (
-          <RecipeToListForm
-            recipe={recipe}
-            onSubmit={handleSubmit}
-            onCancel={handleCancel}
-            isSubmitting={false}
-            error={
-              error instanceof Error
-                ? error.message
-                : "Failed to add recipe to list"
-            }
-          />
-        ),
-      });
-    } finally {
-      updateSubmittingState(false);
-    }
-  };
-
   const handleCancel = () => {
     dialogService.hideDialog("recipe-to-list");
   };
@@ -163,10 +116,8 @@ export function showRecipeToListDialog(
     content: (
       <RecipeToListForm
         recipe={recipe}
-        onSubmit={handleSubmit}
         onCancel={handleCancel}
-        isSubmitting={isSubmitting}
-        error={null}
+        selectedIngredientIds={selectedIngredientIds}
       />
     ),
     maxWidth: "sm",

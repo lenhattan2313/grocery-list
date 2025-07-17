@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { UNIT_OPTIONS } from "@/constants/unit";
 
 interface Ingredient {
   name: string;
@@ -22,21 +23,6 @@ interface IngredientListProps {
   ingredients: Ingredient[];
   onChange: (ingredients: Ingredient[]) => void;
 }
-
-const UNITS = [
-  "g",
-  "kg",
-  "ml",
-  "l",
-  "cup",
-  "tbsp",
-  "tsp",
-  "oz",
-  "lb",
-  "piece",
-  "slice",
-  "whole",
-] as const;
 
 export function IngredientList({ ingredients, onChange }: IngredientListProps) {
   const { control } = useForm({
@@ -78,8 +64,9 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
               className="flex-1"
             />
             <Input
-              type="text"
+              type="number"
               placeholder="Amount"
+              min={1}
               value={ingredients[index]?.quantity || ""}
               onChange={(e) =>
                 handleIngredientChange(index, "quantity", e.target.value)
@@ -96,9 +83,9 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
                 <SelectValue placeholder="Unit" />
               </SelectTrigger>
               <SelectContent>
-                {UNITS.map((unit) => (
-                  <SelectItem key={unit} value={unit}>
-                    {unit}
+                {UNIT_OPTIONS.map((unit) => (
+                  <SelectItem key={unit.value} value={unit.value}>
+                    {unit.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -128,6 +115,7 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
           append({ name: "", quantity: "", unit: "" });
           onChange([...ingredients, { name: "", quantity: "", unit: "" }]);
         }}
+        aria-label="Add Ingredient"
       >
         Add Ingredient
       </Button>

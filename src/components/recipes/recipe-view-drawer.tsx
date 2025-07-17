@@ -10,15 +10,15 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Recipe } from "@/types";
+import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
 import Image from "next/image";
 import { useState } from "react";
 
 interface RecipeViewDrawerProps {
-  recipe?: Recipe;
+  recipe?: RecipeWithIngredients;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddToList?: (recipe: Recipe) => void;
+  onAddToList?: (recipe: RecipeWithIngredients) => void;
 }
 
 export function RecipeViewDrawer({
@@ -107,10 +107,15 @@ export function RecipeViewDrawer({
                 <Button
                   onClick={handleAddSelected}
                   disabled={selectedIngredients.size === 0}
+                  aria-label="Add Selected Ingredients"
                 >
                   Add Selected
                 </Button>
-                <Button onClick={handleAddAll} variant="outline">
+                <Button
+                  onClick={handleAddAll}
+                  variant="outline"
+                  aria-label="Add All Ingredients"
+                >
                   Add All
                 </Button>
               </div>
