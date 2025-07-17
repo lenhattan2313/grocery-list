@@ -234,7 +234,7 @@ export function useUpdateListItemsMutation() {
             id: `optimistic-item-${Date.now()}-${index}`,
             createdAt: new Date(),
             updatedAt: new Date(),
-            notes: item.notes ?? "",
+            notes: item.notes ?? null,
           })),
         };
         queryClient.setQueryData(["list", listId], optimisticList);

@@ -15,6 +15,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// datasource db {
+//   provider = "sqlite"
+//   url      = env("DATABASE_URL")
+// }
+
 // NextAuth.js required models
 model Account {
   id                String  @id @default(cuid())
@@ -130,7 +135,7 @@ model ShoppingItem {
   quantity    Int      @default(1)
   unit        String   @default("pcs")
   isCompleted Boolean  @default(false)
-  notes       String   @default("")
+  notes       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   listId      String

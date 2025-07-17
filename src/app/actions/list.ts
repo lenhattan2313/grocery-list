@@ -26,7 +26,7 @@ export async function getLists() {
 
   const lists = await prisma.shoppingList.findMany({
     where: {
-      userId: session?.user?.id,
+      userId: session.user.id,
     },
     include: {
       items: {
@@ -184,7 +184,7 @@ const UpdateItemSchema = z.object({
   quantity: z.number().min(1).optional(),
   unit: z.string().optional(),
   isCompleted: z.boolean().optional(),
-  notes: z.string().optional(),
+  notes: z.string().nullable().optional(),
 });
 
 export async function updateItem(

@@ -45,7 +45,7 @@ export interface ShoppingItem {
   quantity: number;
   unit: string;
   isCompleted: boolean;
-  notes?: string;
+  notes?: string | null;
   createdAt: Date;
   updatedAt: Date;
   listId: string;
