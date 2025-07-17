@@ -1,34 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { useListsStore } from "@/stores/lists-store";
+import { useCreateListMutation } from "@/hooks/use-lists-query";
 import { dialogService } from "@/stores/dialog-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 
 interface AddListFormProps {
-  onSubmit: (name: string) => Promise<void>;
+  onSubmit: (name: string) => void;
   onCancel: () => void;
   isSubmitting: boolean;
-  error?: string | null;
 }
 
-function AddListForm({
-  onSubmit,
-  onCancel,
-  isSubmitting,
-  error,
-}: AddListFormProps) {
+function AddListForm({ onSubmit, onCancel, isSubmitting }: AddListFormProps) {
   const [name, setName] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-
-    await onSubmit(name.trim());
+    onSubmit(name.trim());
     setName("");
+  };
+
+  const handleCancel = () => {
+    onCancel();
   };
 
   return (
@@ -46,26 +43,17 @@ function AddListForm({
             autoFocus
           />
         </div>
-        {error && (
-          <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-            {error}
-          </div>
-        )}
       </div>
       <div className="flex justify-end space-x-2">
         <Button
           type="button"
           variant="outline"
-          onClick={onCancel}
+          onClick={handleCancel}
           disabled={isSubmitting}
         >
           Cancel
         </Button>
-        <Button
-          type="submit"
-          disabled={!name.trim() || isSubmitting}
-          className="min-w-[100px]"
-        >
+        <Button type="submit" disabled={!name.trim() || isSubmitting}>
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -83,60 +71,35 @@ function AddListForm({
   );
 }
 
-export function showAddListDialog() {
-  let isSubmitting = false;
+function AddListDialogWrapper() {
+  const mutation = useCreateListMutation();
 
-  const updateSubmittingState = (submitting: boolean) => {
-    isSubmitting = submitting;
-    // Update the dialog content with new submitting state
-    dialogService.updateDialog("add-list", {
-      content: (
-        <AddListForm
-          onSubmit={handleSubmit}
-          onCancel={handleCancel}
-          isSubmitting={isSubmitting}
-          error={useListsStore.getState().error}
-        />
-      ),
+  const handleSubmit = (name: string) => {
+    mutation.mutate(name, {
+      onSuccess: () => {
+        dialogService.hideDialog("add-list");
+      },
     });
-  };
-
-  const handleSubmit = async (name: string) => {
-    updateSubmittingState(true);
-    try {
-      await useListsStore.getState().createList(name);
-      dialogService.hideDialog("add-list");
-    } catch (error) {
-      console.error("Failed to create list:", error);
-    } finally {
-      updateSubmittingState(false);
-    }
   };
 
   const handleCancel = () => {
     dialogService.hideDialog("add-list");
   };
 
-  dialogService.showDialog({
-    id: "add-list",
-    title: "Create New Shopping List",
-    content: (
-      <AddListForm
-        onSubmit={handleSubmit}
-        onCancel={handleCancel}
-        isSubmitting={isSubmitting}
-        error={useListsStore.getState().error}
-      />
-    ),
-    maxWidth: "md",
-  });
+  return (
+    <AddListForm
+      onSubmit={handleSubmit}
+      onCancel={handleCancel}
+      isSubmitting={mutation.isPending}
+    />
+  );
 }
 
-export function AddListButton() {
-  return (
-    <Button onClick={showAddListDialog} className="gap-2">
-      <Plus className="h-4 w-4" />
-      New List
-    </Button>
-  );
+export function showAddListDialog() {
+  dialogService.showDialog({
+    id: "add-list",
+    title: "Create a New Shopping List",
+    content: <AddListDialogWrapper />,
+    maxWidth: "md",
+  });
 }

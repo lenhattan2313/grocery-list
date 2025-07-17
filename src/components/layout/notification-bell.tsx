@@ -13,7 +13,12 @@ export function NotificationBell() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label="Open notifications"
+        >
           <Bell className="h-6 w-6" />
           {/* Notification dot indicator */}
           <span className="absolute top-[8px] right-[10px] h-1 w-1 rounded-full bg-red-500" />

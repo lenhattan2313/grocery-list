@@ -11,6 +11,7 @@ import { CreateRecipeForm, Recipe } from "@/types";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
 import { PageHeader } from "@/components/common/page-header";
 import { dialogService } from "@/stores/dialog-store";
+import { PageHeaderSearch } from "@/components/common/page-header-search";
 
 export default function RecipesPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -143,7 +144,9 @@ export default function RecipesPage() {
 
   return (
     <div>
-      <PageHeader title="Recipes" onSearch={setSearchQuery} className="mb-6" />
+      <PageHeader title="Recipes" className="mb-6">
+        <PageHeaderSearch onSearch={setSearchQuery} />
+      </PageHeader>
 
       {isLoading && recipes.length === 0 ? (
         <div className="flex items-center justify-center h-64">
@@ -184,6 +187,7 @@ export default function RecipesPage() {
           setIsDrawerOpen(true);
         }}
         icon={Plus}
+        ariaLabel="Add recipe"
       />
 
       <RecipeFormDrawer

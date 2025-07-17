@@ -1,8 +1,10 @@
+import { DialogService } from "@/components/common/dialog-service";
+import { QueryProvider } from "@/components/providers/query-provider";
+import { AuthProvider } from "@/components/providers/session-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
-import { AuthProvider } from "@/components/providers/session-provider";
-import { DialogService } from "@/components/common/dialog-service";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +32,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          {children}
-          <DialogService />
+          <QueryProvider>
+            {children}
+            <DialogService />
+          </QueryProvider>
+          <Toaster position="top-center" />
         </AuthProvider>
       </body>
     </html>

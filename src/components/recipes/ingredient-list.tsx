@@ -112,6 +112,7 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
                 onChange(newIngredients);
                 remove(index);
               }}
+              aria-label="Remove ingredient"
             >
               <X className="h-4 w-4" />
               <span className="sr-only">Remove ingredient</span>

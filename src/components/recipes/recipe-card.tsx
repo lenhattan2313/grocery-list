@@ -70,7 +70,12 @@ export function RecipeCard({
           </Button>
         )}
         {onEdit && (
-          <Button variant="outline" size="icon" onClick={() => onEdit(recipe)}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => onEdit(recipe)}
+            aria-label="Edit recipe"
+          >
             <span className="sr-only">Edit recipe</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -93,6 +98,7 @@ export function RecipeCard({
             size="icon"
             onClick={() => onDelete(recipe)}
             className="text-red-600 hover:text-red-700"
+            aria-label="Delete recipe"
           >
             <span className="sr-only">Delete recipe</span>
             <svg

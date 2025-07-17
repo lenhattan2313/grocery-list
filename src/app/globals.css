@@ -120,3 +120,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+.custom-strikethrough {
+  position: relative;
+}
+.custom-strikethrough::before {
+  content: "";
+  position: absolute;
+  top: 55%;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  z-index: 1;
+}
