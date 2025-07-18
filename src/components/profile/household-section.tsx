@@ -43,9 +43,7 @@ export function HouseholdSection({
   const saveMemberMutation = useSaveMemberMutation({
     householdId: household.id,
   });
-  const removeMemberMutation = useRemoveMemberMutation({
-    householdId: household.id,
-  });
+  const removeMemberMutation = useRemoveMemberMutation();
 
   async function handleSubmit(data: {
     email: string;
