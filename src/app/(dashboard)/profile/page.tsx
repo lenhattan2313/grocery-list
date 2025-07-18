@@ -1,8 +1,8 @@
+import { getHousehold, createHousehold } from "@/app/actions/household";
 import { auth } from "@/lib/auth";
 import { HouseholdSection } from "@/components/profile/household-section";
 import { Card } from "@/components/ui/card";
 import { redirect } from "next/navigation";
-import { getHousehold, createHousehold } from "@/app/actions/household";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -10,15 +10,9 @@ export default async function ProfilePage() {
     redirect("/signin");
   }
 
-  // Get user's household with members
-  let household = await getHousehold();
-
-  // If no household exists, create one for the user
+  let household = await getHousehold(session.user.id);
   if (!household) {
-    household = await createHousehold();
-    if (household) {
-      return redirect("/profile");
-    }
+    household = await createHousehold(session.user.id);
   }
 
   return (
@@ -32,23 +26,17 @@ export default async function ProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* User Profile Section */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Your Profile
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
+        <Card className="p-6 gap-0">
+          <h3 className="text-lg font-semibold text-gray-900">Your Profile</h3>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">Name</label>
               <p className="text-gray-900">
                 {session.user.name || "No name set"}
               </p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">Email</label>
               <p className="text-gray-900">{session.user.email}</p>
             </div>
           </div>

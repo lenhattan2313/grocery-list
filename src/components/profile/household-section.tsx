@@ -6,9 +6,12 @@ import { Card } from "@/components/ui/card";
 import { HouseholdMember } from "@prisma/client";
 import { FamilyMemberCard } from "./family-member-card";
 import { FamilyMemberDialog } from "./family-member-dialog";
-import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import {
+  useRemoveMemberMutation,
+  useSaveMemberMutation,
+} from "@/hooks/use-household-mutations";
+import { Role } from "@/constants/role";
 
 interface HouseholdSectionProps {
   currentUserId: string;
@@ -32,71 +35,37 @@ export function HouseholdSection({
   currentUserId,
   household,
 }: HouseholdSectionProps) {
-  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<HouseholdMember | null>(
     null
   );
 
+  const saveMemberMutation = useSaveMemberMutation({
+    householdId: household.id,
+  });
+  const removeMemberMutation = useRemoveMemberMutation({
+    householdId: household.id,
+  });
+
   async function handleSubmit(data: {
     email: string;
-    role: "admin" | "member";
+    role: Role;
     dietaryRestrictions?: string;
     allergies?: string;
   }) {
     try {
-      const endpoint = selectedMember
-        ? `/api/households/${household.id}/members/${selectedMember.id}`
-        : `/api/households/${household.id}/members`;
-
-      const response = await fetch(endpoint, {
-        method: selectedMember ? "PATCH" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+      await saveMemberMutation.mutateAsync({
+        memberData: data,
+        memberId: selectedMember?.id,
       });
-
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
-      }
-
-      toast.success(
-        selectedMember
-          ? "Member updated successfully"
-          : "Member added successfully"
-      );
-      router.refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to save member"
-      );
-      throw error;
+      setDialogOpen(false);
+    } catch {
+      // error is already handled by the mutation hook's onError
     }
   }
 
-  async function handleRemoveMember(memberId: string) {
-    try {
-      const response = await fetch(
-        `/api/households/${household.id}/members/${memberId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
-      }
-
-      toast.success("Member removed successfully");
-      router.refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to remove member"
-      );
-    }
+  function handleRemoveMember(memberId: string) {
+    removeMemberMutation.mutate({ memberId });
   }
 
   function handleEdit(member: HouseholdMember) {
@@ -110,7 +79,7 @@ export function HouseholdSection({
   }
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 gap-0">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">
