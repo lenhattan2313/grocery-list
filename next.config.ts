@@ -1,10 +1,14 @@
+// next.config.ts
+import withPWA from "next-pwa";
 import type { NextConfig } from "next";
+
+const isDev = process.env.NODE_ENV === "development";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  experimental: {
-    ppr: "incremental",
-  },
+  // experimental: {
+  //   ppr: "incremental",
+  // },
   images: {
     remotePatterns: [
       {
@@ -19,4 +23,9 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA({
+  dest: "public",
+  disable: isDev,
+  register: true,
+  skipWaiting: true,
+})(nextConfig);

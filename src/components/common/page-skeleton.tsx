@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/common/page-header";
 
-function SkeletonCard() {
+export function SkeletonCard() {
   return (
     <Card className="p-4 space-y-3">
       <div className="h-5 w-3/4 bg-gray-200 rounded animate-pulse" />

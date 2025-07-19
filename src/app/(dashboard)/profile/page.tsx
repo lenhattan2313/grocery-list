@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { ProfileDetails } from "@/components/profile/profile-details";
 import { Skeleton } from "@/components/ui/skeleton";
-export const experimental_ppr = true;
+// export const experimental_ppr = true;
 export default function ProfilePage() {
   return (
     <div className="space-y-8">

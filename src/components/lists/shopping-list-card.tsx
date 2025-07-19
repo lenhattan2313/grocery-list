@@ -1,13 +1,13 @@
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { useOptimistic, useTransition, memo } from "react";
 import {
   useDeleteListMutation,
   useUpdateListMutation,
 } from "@/hooks/use-lists-query";
 import { Prisma } from "@prisma/client";
-import { formatDistanceToNow } from "date-fns";
 import { MoreVertical, Trash2, Edit, Check } from "lucide-react";
+import { ClientRelativeTime } from "@/components/common/client-relative-time";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,9 +36,12 @@ type ShoppingListWithItems = Prisma.ShoppingListGetPayload<{
 interface ShoppingListCardProps {
   list: ShoppingListWithItems;
   onViewList: (listId: string) => void;
+  isPriority?: boolean;
 }
-
-export function ShoppingListCard({ list, onViewList }: ShoppingListCardProps) {
+const ShoppingListCardComponent = ({
+  list,
+  onViewList,
+}: ShoppingListCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(list.name);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -137,121 +140,139 @@ export function ShoppingListCard({ list, onViewList }: ShoppingListCardProps) {
   }
 
   return (
-    <Card onClick={() => onViewList(optimisticList.id)}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+    <div onClick={() => onViewList(optimisticList.id)}>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            {isEditing ? (
+              <div className="flex w-full items-center gap-2">
+                <Input
+                  ref={inputRef}
+                  value={editedName}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="h-8"
+                />
+              </div>
+            ) : (
+              <CardTitle className="truncate">{optimisticList.name}</CardTitle>
+            )}
+
+            {!isEditing && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => e.stopPropagation()}
+                    aria-label="Open menu"
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <DropdownMenuItem onClick={handleEdit}>
+                    <Edit className="mr-2 h-4 w-4" />
+                    <span>Edit</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Delete</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
+          <CardDescription>
+            {totalItems} items &middot; Updated{" "}
+            <ClientRelativeTime date={new Date(optimisticList.updatedAt)} />
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground">
+              {completedItemsCount} / {totalItems} completed
+            </span>
+            {optimisticList.isCompleted ? (
+              <Badge variant="secondary">Completed</Badge>
+            ) : (
+              <Badge variant="outline">In Progress</Badge>
+            )}
+          </div>
+          <Progress value={progress} className="mt-2" aria-label="Progress" />
+        </CardContent>
+        <CardFooter>
           {isEditing ? (
-            <div className="flex w-full items-center gap-2">
-              <Input
-                ref={inputRef}
-                value={editedName}
-                onClick={(e) => e.stopPropagation()}
-                onChange={(e) => setEditedName(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="h-8"
-              />
+            <div className="flex w-full justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCancel();
+                }}
+                aria-label="Cancel"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSave();
+                }}
+                aria-label="Save"
+              >
+                Save
+              </Button>
             </div>
           ) : (
-            <CardTitle className="truncate">{optimisticList.name}</CardTitle>
-          )}
-
-          {!isEditing && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label="Open menu"
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <DropdownMenuItem onClick={handleEdit}>
-                  <Edit className="mr-2 h-4 w-4" />
-                  <span>Edit</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleDelete} disabled={isDeleting}>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  <span>Delete</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-        <CardDescription>
-          {totalItems} items &middot; Updated{" "}
-          {formatDistanceToNow(new Date(optimisticList.updatedAt), {
-            addSuffix: true,
-          })}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">
-            {completedItemsCount} / {totalItems} completed
-          </span>
-          {optimisticList.isCompleted ? (
-            <Badge variant="secondary">Completed</Badge>
-          ) : (
-            <Badge variant="outline">In Progress</Badge>
-          )}
-        </div>
-        <Progress value={progress} className="mt-2" aria-label="Progress" />
-      </CardContent>
-      <CardFooter>
-        {isEditing ? (
-          <div className="flex w-full justify-end gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                handleCancel();
+                handleToggleComplete();
               }}
-              aria-label="Cancel"
+              disabled={updateMutation.isPending}
+              aria-label={
+                optimisticList.isCompleted
+                  ? "Mark as Incomplete"
+                  : "Mark as Complete"
+              }
             >
-              Cancel
+              <Check className="mr-2 h-4 w-4" />
+              <span>
+                {optimisticList.isCompleted
+                  ? "Mark as Incomplete"
+                  : "Mark as Complete"}
+              </span>
             </Button>
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSave();
-              }}
-              aria-label="Save"
-            >
-              Save
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleToggleComplete();
-            }}
-            disabled={updateMutation.isPending}
-            aria-label={
-              optimisticList.isCompleted
-                ? "Mark as Incomplete"
-                : "Mark as Complete"
-            }
-          >
-            <Check className="mr-2 h-4 w-4" />
-            <span>
-              {optimisticList.isCompleted
-                ? "Mark as Incomplete"
-                : "Mark as Complete"}
-            </span>
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+          )}
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+function areEqual(
+  prevProps: ShoppingListCardProps,
+  nextProps: ShoppingListCardProps
+) {
+  return (
+    prevProps.list.id === nextProps.list.id &&
+    prevProps.list.name === nextProps.list.name &&
+    prevProps.list.isCompleted === nextProps.list.isCompleted &&
+    prevProps.list.items.length === nextProps.list.items.length &&
+    prevProps.list.updatedAt === nextProps.list.updatedAt &&
+    prevProps.onViewList === nextProps.onViewList
   );
 }
+
+export const ShoppingListCard = memo(ShoppingListCardComponent, areEqual);

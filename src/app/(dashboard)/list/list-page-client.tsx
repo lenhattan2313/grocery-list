@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { ShoppingListWithItems, useListsQuery } from "@/hooks/use-lists-query";
 import { ShoppingListCard } from "@/components/lists/shopping-list-card";
 import { showAddListDialog } from "@/components/lists/add-list-dialog";
@@ -19,9 +19,9 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
   const { data: lists = [], isLoading, error } = useListsQuery(initialLists);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewingListId, setViewingListId] = useState<string | null>(null);
-  const handleViewList = (listId: string) => {
+  const handleViewList = useCallback((listId: string) => {
     setViewingListId(listId);
-  };
+  }, []);
 
   const filteredLists = lists.filter((list) =>
     list.name.toLowerCase().includes(searchQuery.toLowerCase())

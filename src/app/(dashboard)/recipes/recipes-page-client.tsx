@@ -119,7 +119,7 @@ export default function RecipesPageClient({
             <RecipeCard
               key={recipe.id}
               recipe={recipe}
-              isPriority={index < 6}
+              isPriority={index < 3}
               onEdit={(recipe) => {
                 setSelectedRecipe(recipe);
                 setIsDrawerOpen(true);

@@ -37,7 +37,7 @@ export function RecipeCard({
             alt={recipe.name}
             fill
             className="object-cover rounded-t-lg"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             quality={80}
             priority={isPriority}
             loading={isPriority ? "eager" : "lazy"}
