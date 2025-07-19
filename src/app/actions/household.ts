@@ -2,31 +2,36 @@ import { prisma } from "@/lib/db";
 import { Role } from "@/constants/role";
 
 export async function getHousehold(userId: string) {
-  const household = await prisma.household.findFirst({
-    where: {
-      members: {
-        some: {
-          userId: userId,
+  try {
+    const household = await prisma.household.findFirst({
+      where: {
+        members: {
+          some: {
+            userId: userId,
+          },
         },
       },
-    },
-    include: {
-      members: {
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
+      include: {
+        members: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    });
 
-  return household;
+    return household;
+  } catch (error) {
+    console.error("Failed to get household", error);
+    return null;
+  }
 }
 
 export async function createHousehold(userId: string) {
