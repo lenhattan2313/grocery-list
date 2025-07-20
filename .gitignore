@@ -42,18 +42,6 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# pwa
-/public/workbox-*.js
-/public/workbox-*.js.map
-/public/workbox-*.js.map.gz
-/public/workbox-*.js.map.br
-/public/workbox-*.js.map.br.gz
-/public/workbox-*.js.map.br.gz.br
-/public/workbox-*.js.map.br.gz.br.gz
-/public/sw.js
-/public/sw.js.map
-/public/sw.js.map.gz
-/public/sw.js.map.br
-/public/sw.js.map.br.gz
-/public/sw.js.map.br.gz.br
-/public/sw.js.map.br.gz.br.gz
+
+public/sw*
+public/swe-worker*
