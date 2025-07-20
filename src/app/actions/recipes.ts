@@ -130,7 +130,18 @@ export async function addRecipeToListAsync(
   const list = await prisma.shoppingList.findFirst({
     where: {
       id: listId,
-      userId: session.user.id,
+      OR: [
+        { userId: session.user.id },
+        {
+          household: {
+            members: {
+              some: {
+                userId: session.user.id,
+              },
+            },
+          },
+        },
+      ],
     },
   });
 

@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { IngredientList } from "./ingredient-list";
 import { CreateRecipeForm } from "@/types";
 import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
+import { ImageToTextButton } from "@/components/recipes/image-to-text-button";
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Recipe name is required"),
@@ -35,7 +36,12 @@ const recipeFormSchema = z.object({
     .min(1, "Cooking time must be at least 1 minute")
     .optional(),
   servings: z.number().min(1, "Must serve at least 1 person"),
-  image: z.string().url("Must be a valid URL").optional(),
+  image: z
+    .string()
+    .url("Must be a valid URL")
+    .or(z.literal(""))
+    .optional()
+    .transform((val) => (val === "" ? undefined : val)),
   ingredients: z
     .array(
       z.object({
@@ -86,7 +92,7 @@ export function RecipeFormDrawer({
         instructions: recipe.instructions,
         cookingTime: recipe.cookingTime ?? undefined,
         servings: recipe.servings,
-        image: recipe.image || "",
+        image: recipe.image ?? "",
         ingredients: recipe.ingredients.map((i) => ({
           name: i.name,
           quantity: i.quantity,
@@ -248,13 +254,20 @@ export function RecipeFormDrawer({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Instructions</FormLabel>
-                    <FormControl>
+                    <div className="relative">
                       <Textarea
                         placeholder="Step by step cooking instructions"
-                        className="min-h-[100px]"
+                        className="min-h-[100px] pr-12"
                         {...field}
                       />
-                    </FormControl>
+                      <ImageToTextButton
+                        onTextExtracted={(text) =>
+                          form.setValue("instructions", text, {
+                            shouldValidate: true,
+                          })
+                        }
+                      />
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}

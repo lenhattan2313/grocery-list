@@ -45,6 +45,7 @@ const ShoppingListCardComponent = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(list.name);
   const [isDeleting, startDeleteTransition] = useTransition();
+  const [, startTransition] = useTransition();
   const [optimisticList, setOptimisticList] = useOptimistic(
     list,
     (
@@ -92,16 +93,18 @@ const ShoppingListCardComponent = ({
 
   const handleToggleComplete = () => {
     const newStatus = !optimisticList.isCompleted;
-    setOptimisticList({
-      isCompleted: newStatus,
-      items: optimisticList.items.map((item) => ({
-        ...item,
+    startTransition(() => {
+      setOptimisticList({
         isCompleted: newStatus,
-      })),
-    });
-    updateMutation.mutate({
-      id: optimisticList.id,
-      updates: { isCompleted: newStatus },
+        items: optimisticList.items.map((item) => ({
+          ...item,
+          isCompleted: newStatus,
+        })),
+      });
+      updateMutation.mutate({
+        id: optimisticList.id,
+        updates: { isCompleted: newStatus },
+      });
     });
   };
 
@@ -119,10 +122,12 @@ const ShoppingListCardComponent = ({
       handleCancel();
       return;
     }
-    setOptimisticList({ name: editedName });
-    updateMutation.mutate({
-      id: optimisticList.id,
-      updates: { name: editedName },
+    startTransition(() => {
+      setOptimisticList({ name: editedName });
+      updateMutation.mutate({
+        id: optimisticList.id,
+        updates: { name: editedName },
+      });
     });
     setIsEditing(false);
   };
