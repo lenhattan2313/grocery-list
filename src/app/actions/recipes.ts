@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { CreateRecipeForm } from "@/types";
+import { revalidatePath } from "next/cache";
 
 export async function getRecipes() {
   const session = await auth();
@@ -167,6 +168,6 @@ export async function addRecipeToListAsync(
       items: true,
     },
   });
-
+  revalidatePath("/");
   return updatedList;
 }

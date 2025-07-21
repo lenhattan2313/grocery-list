@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
+import { ChefHat } from "lucide-react";
 import Image from "next/image";
 
 interface RecipeCardProps {
@@ -30,7 +31,7 @@ export function RecipeCard({
 }: RecipeCardProps) {
   return (
     <Card className="w-full overflow-hidden gap-4 pt-0">
-      {recipe.image && (
+      {recipe.image ? (
         <div className="relative w-full aspect-[21/9]">
           <Image
             src={recipe.image}
@@ -42,6 +43,10 @@ export function RecipeCard({
             priority={isPriority}
             loading={isPriority ? "eager" : "lazy"}
           />
+        </div>
+      ) : (
+        <div className="relative w-full aspect-[21/9] bg-muted flex items-center justify-center rounded-t-lg">
+          <ChefHat className="w-12 h-12 text-muted-foreground" />
         </div>
       )}
       <CardHeader>
