@@ -28,6 +28,7 @@ interface ShoppingListItemProps {
   onCancelEdit: () => void;
   isEditing: boolean;
   isSubmittingEdit: boolean;
+  isOwner: boolean;
 }
 
 export function ShoppingListItem({
@@ -39,6 +40,7 @@ export function ShoppingListItem({
   onCancelEdit,
   isEditing,
   isSubmittingEdit,
+  isOwner,
 }: ShoppingListItemProps) {
   const {
     register: registerEdit,
@@ -53,7 +55,6 @@ export function ShoppingListItem({
       unit: item.unit,
     },
   });
-
   return (
     <div
       className={cn(
@@ -150,7 +151,11 @@ export function ShoppingListItem({
       ) : (
         <div
           className="flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50"
-          onClick={() => onToggleItem(item.id)}
+          onClick={() => {
+            if (isOwner) {
+              onToggleItem(item.id);
+            }
+          }}
         >
           <div className="flex-shrink-0">
             <Check
@@ -173,32 +178,34 @@ export function ShoppingListItem({
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onEditItem(item);
-              }}
-              className="h-8 w-8 p-0"
-              aria-label="Edit Item"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              aria-label="Delete Item"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteItem(item.id);
-              }}
-              className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
+          {isOwner && (
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEditItem(item);
+                }}
+                className="h-8 w-8 p-0"
+                aria-label="Edit Item"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                aria-label="Delete Item"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteItem(item.id);
+                }}
+                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

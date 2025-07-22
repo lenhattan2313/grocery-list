@@ -3,13 +3,9 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
-import { revalidatePath } from "next/cache";
 import { CreateListSchema } from "@/schema/list-schema";
-import {
-  CreateItemSchema,
-  UpdateCreateItemSchema,
-  UpdateListItemsSchema,
-} from "@/schema/item-schema";
+import { UpdateListItemsSchema } from "@/schema/item-schema";
+import { getPusherInstance } from "@/lib/pusher";
 
 export async function getLists() {
   const session = await auth();
@@ -80,8 +76,60 @@ export async function createList(name: string) {
     },
   });
 
-  revalidatePath("/list");
   return newList;
+}
+
+export async function updateNameList(listId: string, name: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const validatedData = CreateListSchema.parse({ name });
+
+  const list = await prisma.shoppingList.findFirst({
+    where: {
+      id: listId,
+      userId: session.user.id,
+    },
+  });
+
+  if (!list) {
+    throw new Error(
+      "List not found or you don't have permission to update it."
+    );
+  }
+
+  const updatedList = await prisma.shoppingList.update({
+    where: { id: listId, userId: session.user.id },
+    data: {
+      name: validatedData.name,
+    },
+    include: {
+      items: true,
+      user: true,
+      household: {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (updatedList.householdId) {
+    const pusher = getPusherInstance();
+    await pusher.trigger(
+      `private-household-${updatedList.householdId}`,
+      "list-updated",
+      updatedList
+    );
+  }
+
+  return updatedList;
 }
 
 export async function updateList(
@@ -113,7 +161,7 @@ export async function updateList(
         },
       ],
     },
-    select: { userId: true },
+    select: { userId: true, householdId: true },
   });
 
   if (!list) {
@@ -135,6 +183,10 @@ export async function updateList(
   if (updates.name) updateData.name = updates.name;
   if (updates.isCompleted !== undefined)
     updateData.isCompleted = updates.isCompleted;
+
+  // Store the old household ID to trigger events on it if needed
+  const oldHouseholdId = list.householdId;
+
   if (updates.householdId !== undefined) {
     if (updates.householdId === null) {
       updateData.householdId = null;
@@ -170,7 +222,27 @@ export async function updateList(
       },
     },
   });
-  revalidatePath("/list");
+
+  // Trigger on the old household channel if the list was unshared
+  if (oldHouseholdId && !updatedList.householdId) {
+    const pusher = getPusherInstance();
+    await pusher.trigger(
+      `private-household-${oldHouseholdId}`,
+      "list-deleted",
+      { id: listId }
+    );
+  }
+
+  // Trigger on the household channel if the list is shared
+  if (updatedList.householdId) {
+    const pusher = getPusherInstance();
+    await pusher.trigger(
+      `private-household-${updatedList.householdId}`,
+      "list-updated",
+      updatedList
+    );
+  }
+
   return updatedList;
 }
 
@@ -178,12 +250,28 @@ export async function deleteList(id: string) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
+  // We need to get the householdId before deleting the list
+  const list = await prisma.shoppingList.findUnique({
+    where: { id },
+    select: { householdId: true },
+  });
+
   await prisma.shoppingList.delete({
     where: {
       id,
       userId: session.user.id,
     },
   });
+
+  // Trigger on the household channel if the list was part of one
+  if (list?.householdId) {
+    const pusher = getPusherInstance();
+    await pusher.trigger(
+      `private-household-${list.householdId}`,
+      "list-deleted",
+      { id }
+    );
+  }
 }
 
 export async function getList(id: string) {
@@ -226,80 +314,6 @@ export async function getList(id: string) {
   });
 
   return list;
-}
-
-export async function addItem(
-  listId: string,
-  itemData: z.infer<typeof CreateItemSchema>
-) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated");
-
-  const validatedData = CreateItemSchema.parse(itemData);
-
-  const list = await prisma.shoppingList.findFirst({
-    where: {
-      id: listId,
-      userId: session.user.id,
-    },
-  });
-
-  if (!list) {
-    throw new Error("List not found or permission denied.");
-  }
-
-  const newItem = await prisma.shoppingItem.create({
-    data: {
-      ...validatedData,
-      listId: listId,
-    },
-  });
-
-  return newItem;
-}
-
-export async function updateItem(
-  itemId: string,
-  updates: z.infer<typeof UpdateCreateItemSchema>
-) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated");
-
-  const validatedData = UpdateCreateItemSchema.parse(updates);
-
-  const item = await prisma.shoppingItem.findUnique({
-    where: { id: itemId },
-    select: { list: { select: { userId: true } } },
-  });
-
-  if (item?.list.userId !== session.user.id) {
-    throw new Error("Permission denied.");
-  }
-
-  const updatedItem = await prisma.shoppingItem.update({
-    where: { id: itemId },
-    data: validatedData,
-  });
-
-  return updatedItem;
-}
-
-export async function deleteItem(itemId: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Not authenticated");
-
-  const item = await prisma.shoppingItem.findUnique({
-    where: { id: itemId },
-    select: { list: { select: { userId: true } } },
-  });
-
-  if (item?.list.userId !== session.user.id) {
-    throw new Error("Permission denied.");
-  }
-
-  await prisma.shoppingItem.delete({
-    where: { id: itemId },
-  });
 }
 
 export async function updateListItems(
@@ -357,6 +371,15 @@ export async function updateListItems(
       },
     },
   });
+
+  if (updatedList?.householdId) {
+    const pusher = getPusherInstance();
+    await pusher.trigger(
+      `private-household-${updatedList.householdId}`,
+      "list-updated", // Firing 'list-updated' as the client is listening for this
+      updatedList
+    );
+  }
 
   return updatedList;
 }

@@ -9,9 +9,6 @@ import {
   updateList,
   deleteList,
   getList,
-  addItem,
-  // updateItem,
-  deleteItem,
   updateListItems,
 } from "@/app/actions/list";
 import { ShoppingListWithItems } from "@/types/list";
@@ -115,6 +112,70 @@ export function useUpdateListMutation() {
   });
 }
 
+export function useUpdateNameListMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    ShoppingListWithItems,
+    Error,
+    { id: string; name: string },
+    {
+      previousLists: ShoppingListWithItems[] | undefined;
+      previousList: ShoppingListWithItems | undefined;
+    }
+  >({
+    mutationFn: ({ id, name }) => updateList(id, { name }),
+    onMutate: async ({ id, name }) => {
+      await queryClient.cancelQueries({ queryKey: ["lists"] });
+      await queryClient.cancelQueries({ queryKey: ["list", id] });
+
+      const previousLists = queryClient.getQueryData<ShoppingListWithItems[]>([
+        "lists",
+      ]);
+      const previousList = queryClient.getQueryData<ShoppingListWithItems>([
+        "list",
+        id,
+      ]);
+
+      if (previousLists) {
+        queryClient.setQueryData<ShoppingListWithItems[]>(
+          ["lists"],
+          previousLists.map((list) =>
+            list.id === id ? { ...list, name } : list
+          )
+        );
+      }
+
+      if (previousList) {
+        queryClient.setQueryData<ShoppingListWithItems>(["list", id], {
+          ...previousList,
+          name,
+        });
+      }
+
+      return { previousLists, previousList };
+    },
+    onSuccess: (updatedList) => {
+      toast.success(`List renamed to "${updatedList.name}"`);
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousLists) {
+        queryClient.setQueryData(["lists"], context.previousLists);
+      }
+      if (context?.previousList) {
+        queryClient.setQueryData(["list", variables.id], context.previousList);
+      }
+      toast.error(err.message || "Failed to update list name.");
+    },
+    onSettled: (data) => {
+      if (data) {
+        queryClient.invalidateQueries({ queryKey: ["lists"] });
+        queryClient.invalidateQueries({ queryKey: ["list", data.id] });
+      }
+    },
+  });
+}
+
 export function useDeleteListMutation() {
   const queryClient = useQueryClient();
   return useMutation<
@@ -155,56 +216,6 @@ export function useListQuery(listId: string | null) {
     queryKey: ["list", listId],
     queryFn: () => (listId ? getList(listId) : null),
     enabled: !!listId,
-  });
-}
-
-export function useAddItemMutation() {
-  const queryClient = useQueryClient();
-  return useMutation<
-    ShoppingItem,
-    Error,
-    { listId: string; itemData: Omit<ShoppingItem, "id" | "listId"> }
-  >({
-    mutationFn: ({ listId, itemData }) => addItem(listId, itemData),
-    onSuccess: (newItem) => {
-      queryClient.invalidateQueries({ queryKey: ["list", newItem.listId] });
-      toast.success("Item added successfully");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to add item.");
-    },
-  });
-}
-
-// export function useUpdateItemMutation() {
-//   const queryClient = useQueryClient();
-//   return useMutation<
-//     ShoppingItem,
-//     Error,
-//     { itemId: string; updates: Partial<ShoppingItem> }
-//   >({
-//     mutationFn: ({ itemId, updates }) => updateItem(itemId, updates),
-//     onSuccess: (updatedItem) => {
-//       queryClient.invalidateQueries({ queryKey: ["list", updatedItem.listId] });
-//       toast.success("Item updated successfully");
-//     },
-//     onError: (error) => {
-//       toast.error(error.message || "Failed to update item.");
-//     },
-//   });
-// }
-
-export function useDeleteItemMutation() {
-  const queryClient = useQueryClient();
-  return useMutation<void, Error, { itemId: string; listId: string }>({
-    mutationFn: ({ itemId }) => deleteItem(itemId),
-    onSuccess: (_, { listId }) => {
-      queryClient.invalidateQueries({ queryKey: ["list", listId] });
-      toast.success("Item deleted successfully");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to delete item.");
-    },
   });
 }
 

@@ -23,6 +23,7 @@ export function ShareListDialog({ listId }: ShareListDialogProps) {
   );
 
   const isShared = !!list?.householdId;
+  const isOwner = list?.userId === session?.user?.id;
 
   const handleToggleShare = () => {
     updateListMutation.mutate(
@@ -43,9 +44,11 @@ export function ShareListDialog({ listId }: ShareListDialogProps) {
   return (
     <div>
       <div className="text-sm text-muted-foreground">
-        {isShared
-          ? "This list is currently shared with your household."
-          : "Share this list with your household members."}
+        {isOwner
+          ? isShared
+            ? "This list is currently shared with your household."
+            : "Share this list with your household members."
+          : "Only the list owner can share or unshare this list."}
       </div>
       {isLoading ? (
         <div className="flex items-center justify-center p-8">
@@ -85,6 +88,7 @@ export function ShareListDialog({ listId }: ShareListDialogProps) {
         <Button
           onClick={handleToggleShare}
           disabled={
+            !isOwner ||
             !household ||
             !otherMembers ||
             otherMembers.length === 0 ||

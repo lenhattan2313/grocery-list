@@ -18,6 +18,7 @@ import { CreateItemSchema } from "@/schema/item-schema";
 import { ListDrawerHeader } from "./list-details/list-drawer-header";
 import { ShoppingList } from "./list-details/shopping-list";
 import { SmartSuggestions } from "./list-details/smart-suggestions";
+import { useSession } from "next-auth/react";
 
 interface ListDetailsDrawerProps {
   listId: string | null;
@@ -30,6 +31,7 @@ export function ListDetailsDrawer({
   open,
   onOpenChange,
 }: ListDetailsDrawerProps) {
+  const { data: session } = useSession();
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
@@ -180,7 +182,7 @@ export function ListDetailsDrawer({
   }
 
   if (!list) return null;
-
+  const isOwner = session?.user?.id === list.userId;
   return (
     <Drawer
       open={open}
@@ -199,16 +201,19 @@ export function ListDetailsDrawer({
         <ListDrawerHeader listName={list.name} progress={progress} />
 
         <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-24">
-          <AddItemForm
-            onAddItem={handleAddItem}
-            isAdding={isSubmitting}
-            listId={listId as string}
-          />
-
-          <SmartSuggestions
-            onAddItem={handleAddItemFromSuggestion}
-            existingItems={existingItems}
-          />
+          {isOwner && (
+            <>
+              <AddItemForm
+                onAddItem={handleAddItem}
+                isAdding={isSubmitting}
+                listId={listId as string}
+              />
+              <SmartSuggestions
+                onAddItem={handleAddItemFromSuggestion}
+                existingItems={existingItems}
+              />
+            </>
+          )}
 
           <ShoppingList
             items={items}
@@ -219,6 +224,7 @@ export function ListDetailsDrawer({
             onEditItem={handleEditItem}
             onSaveEdit={handleSaveEdit}
             onCancelEdit={handleCancelEdit}
+            isOwner={isOwner}
           />
         </div>
         {hasChanges && (

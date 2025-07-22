@@ -3,7 +3,7 @@
 import { useOptimistic, useTransition, memo } from "react";
 import {
   useDeleteListMutation,
-  useUpdateListMutation,
+  useUpdateNameListMutation,
 } from "@/hooks/use-lists-query";
 import { Prisma } from "@prisma/client";
 import { MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
@@ -74,8 +74,10 @@ const ShoppingListCardComponent = ({
     })
   );
 
+  const isOwner = session?.user?.id === optimisticList.userId;
+
   const deleteMutation = useDeleteListMutation();
-  const updateMutation = useUpdateListMutation();
+  const updateMutation = useUpdateNameListMutation();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -116,7 +118,7 @@ const ShoppingListCardComponent = ({
       setOptimisticList({ name: editedName });
       updateMutation.mutate({
         id: optimisticList.id,
-        updates: { name: editedName },
+        name: editedName,
       });
     });
     setIsEditing(false);
@@ -147,7 +149,8 @@ const ShoppingListCardComponent = ({
   const otherMembers = household?.members.filter(
     (member) => member.userId !== session?.user?.id
   );
-  const canShare = household && otherMembers && otherMembers.length > 0;
+  const canShare =
+    isOwner && household && otherMembers && otherMembers.length > 0;
 
   return (
     <div onClick={() => onViewList(optimisticList.id)}>
@@ -169,7 +172,7 @@ const ShoppingListCardComponent = ({
               <CardTitle className="truncate">{optimisticList.name}</CardTitle>
             )}
 
-            {!isEditing && (
+            {!isEditing && isOwner && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -252,6 +255,7 @@ const ShoppingListCardComponent = ({
               size="sm"
               onClick={handleShareClick}
               aria-label="Share list"
+              className="ml-2"
             >
               <Share2 className="mr-2 h-4 w-4" />
               <span>Share</span>

@@ -15,6 +15,7 @@ interface ShoppingListProps {
   onEditItem: (item: ShoppingItemType) => void;
   onSaveEdit: (data: z.infer<typeof CreateItemSchema>) => void;
   onCancelEdit: () => void;
+  isOwner: boolean;
 }
 
 export function ShoppingList({
@@ -26,6 +27,7 @@ export function ShoppingList({
   onEditItem,
   onSaveEdit,
   onCancelEdit,
+  isOwner,
 }: ShoppingListProps) {
   if (items.length === 0) {
     return (
@@ -50,6 +52,7 @@ export function ShoppingList({
           onEditItem={onEditItem}
           onSaveEdit={onSaveEdit}
           onCancelEdit={onCancelEdit}
+          isOwner={isOwner}
         />
       ))}
     </div>

@@ -11,6 +11,7 @@ import { FloatingActionButton } from "@/components/common/floating-action-button
 import { PageHeaderSearch } from "@/components/common/page-header-search";
 import { PageSkeleton } from "@/components/common/page-skeleton";
 import { ShoppingListWithItems } from "@/types/list";
+import { useRealtimeLists } from "@/hooks/use-realtime-lists";
 
 interface ListsPageClientProps {
   initialLists: ShoppingListWithItems[];
@@ -20,6 +21,9 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
   const { data: lists = [], isLoading, error } = useListsQuery(initialLists);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewingListId, setViewingListId] = useState<string | null>(null);
+
+  useRealtimeLists();
+
   const handleViewList = useCallback((listId: string) => {
     setViewingListId(listId);
   }, []);
