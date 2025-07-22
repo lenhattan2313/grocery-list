@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ShoppingListWithItems, useListsQuery } from "@/hooks/use-lists-query";
+import { useListsQuery } from "@/hooks/use-lists-query";
 import { ShoppingListCard } from "@/components/lists/shopping-list-card";
 import { showAddListDialog } from "@/components/lists/add-list-dialog";
 import { ListDetailsDrawer } from "@/components/lists/list-details-drawer";
@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/common/page-header";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
 import { PageHeaderSearch } from "@/components/common/page-header-search";
 import { PageSkeleton } from "@/components/common/page-skeleton";
+import { ShoppingListWithItems } from "@/types/list";
 
 interface ListsPageClientProps {
   initialLists: ShoppingListWithItems[];

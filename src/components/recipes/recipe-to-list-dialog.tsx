@@ -1,9 +1,10 @@
-import { useListsQuery, ShoppingListWithItems } from "@/hooks/use-lists-query";
+import { useListsQuery } from "@/hooks/use-lists-query";
 import { Button } from "@/components/ui/button";
 import { dialogService } from "@/stores/dialog-store";
 import { Loader2 } from "lucide-react";
 import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
 import { useAddRecipeToListMutation } from "@/hooks/use-add-recipe-to-list-mutation";
+import { ShoppingListWithItems } from '@/types/list';
 
 interface RecipeToListFormProps {
   recipe: RecipeWithIngredients;

@@ -84,8 +84,8 @@ export function HouseholdSection({
             {household.name}
           </h3>
           <p className="text-sm text-gray-600">
-            {household.members.length} member
-            {household.members.length !== 1 ? "s" : ""}
+            {household.members?.length} member
+            {household.members?.length !== 1 ? "s" : ""}
           </p>
         </div>
         <Button onClick={handleAdd} size="sm" aria-label="Add Member">
@@ -95,7 +95,7 @@ export function HouseholdSection({
       </div>
 
       <div className="space-y-4">
-        {household.members.map((member) => (
+        {household.members?.map((member) => (
           <FamilyMemberCard
             key={member.id}
             member={member}

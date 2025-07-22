@@ -17,14 +17,14 @@ import { Check, Edit, Trash2, Loader2, Save, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ShoppingItem } from "@/types";
 import { UNIT_OPTIONS } from "@/constants/unit";
-import { itemSchema } from "@/schema/item-schema";
+import { CreateItemSchema } from "@/schema/item-schema";
 
 interface ShoppingListItemProps {
   item: ShoppingItem;
   onToggleItem: (itemId: string) => void;
   onDeleteItem: (itemId: string) => void;
   onEditItem: (item: ShoppingItem) => void;
-  onSaveEdit: (data: z.infer<typeof itemSchema>) => void;
+  onSaveEdit: (data: z.infer<typeof CreateItemSchema>) => void;
   onCancelEdit: () => void;
   isEditing: boolean;
   isSubmittingEdit: boolean;
@@ -46,7 +46,7 @@ export function ShoppingListItem({
     control: controlEdit,
     formState: { errors: errorsEdit },
   } = useForm({
-    resolver: zodResolver(itemSchema),
+    resolver: zodResolver(CreateItemSchema),
     defaultValues: {
       name: item.name,
       quantity: item.quantity,

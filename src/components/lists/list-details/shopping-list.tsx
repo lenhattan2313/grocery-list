@@ -4,7 +4,7 @@ import { ShoppingCart } from "lucide-react";
 import { ShoppingItem as ShoppingItemType } from "@/types";
 import { ShoppingListItem } from "./shopping-list-item";
 import { z } from "zod";
-import { itemSchema } from "@/schema/item-schema";
+import { CreateItemSchema } from "@/schema/item-schema";
 
 interface ShoppingListProps {
   items: ShoppingItemType[];
@@ -13,7 +13,7 @@ interface ShoppingListProps {
   onToggleItem: (itemId: string) => void;
   onDeleteItem: (itemId: string) => void;
   onEditItem: (item: ShoppingItemType) => void;
-  onSaveEdit: (data: z.infer<typeof itemSchema>) => void;
+  onSaveEdit: (data: z.infer<typeof CreateItemSchema>) => void;
   onCancelEdit: () => void;
 }
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -8,16 +10,12 @@ import {
   deleteList,
   getList,
   addItem,
-  updateItem,
+  // updateItem,
   deleteItem,
   updateListItems,
 } from "@/app/actions/list";
-import { ShoppingList, ShoppingItem } from "@/types";
-import { Prisma } from "@prisma/client";
-
-export type ShoppingListWithItems = Prisma.ShoppingListGetPayload<{
-  include: { items: true };
-}>;
+import { ShoppingListWithItems } from "@/types/list";
+import { ShoppingItem } from "@/types/items";
 
 export function useListsQuery(initialData?: ShoppingListWithItems[]) {
   return useQuery<ShoppingListWithItems[], Error>({
@@ -48,8 +46,18 @@ export function useCreateListMutation() {
         createdAt: new Date(),
         updatedAt: new Date(),
         userId: "optimistic-user", // Placeholder, will be replaced by server response
-        householdId: null, // FIX: Added missing property
+        householdId: null,
         items: [],
+        household: null,
+        user: {
+          id: "optimistic-user",
+          name: "You",
+          email: "",
+          image: "",
+          emailVerified: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       };
 
       queryClient.setQueryData<ShoppingListWithItems[]>(
@@ -76,39 +84,33 @@ export function useCreateListMutation() {
 
 export function useUpdateListMutation() {
   const queryClient = useQueryClient();
-  return useMutation<
-    ShoppingListWithItems | null,
-    Error,
-    { id: string; updates: Partial<ShoppingList> },
-    { previousLists: ShoppingListWithItems[] }
-  >({
-    mutationFn: ({ id, updates }) => updateList(id, updates),
-    onMutate: async ({ id, updates }) => {
-      await queryClient.cancelQueries({ queryKey: ["lists"] });
-      const previousLists =
-        queryClient.getQueryData<ShoppingListWithItems[]>(["lists"]) || [];
 
-      queryClient.setQueryData<ShoppingListWithItems[]>(["lists"], (old) =>
-        (old || []).map((list) =>
-          list.id === id
-            ? ({ ...list, ...updates } as ShoppingListWithItems)
-            : list
-        )
+  return useMutation({
+    mutationFn: ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: {
+        name?: string;
+        isCompleted?: boolean;
+        householdId?: string | null;
+      };
+    }) => updateList(id, updates),
+    onSuccess: (updatedList) => {
+      queryClient.setQueryData(
+        ["lists"],
+        (oldData: ShoppingListWithItems[] | undefined) => {
+          if (!oldData) return [];
+          return oldData.map((list) =>
+            list.id === updatedList.id ? updatedList : list
+          );
+        }
       );
-
-      return { previousLists };
+      toast.success(`List "${updatedList.name}" updated successfully!`);
     },
-    onSuccess: () => {
-      toast.success("List updated successfully");
-    },
-    onError: (error, _, context) => {
-      if (context?.previousLists) {
-        queryClient.setQueryData(["lists"], context.previousLists);
-      }
-      toast.error(error.message || "Failed to update list, reverting.");
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["lists"] });
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 }
@@ -174,23 +176,23 @@ export function useAddItemMutation() {
   });
 }
 
-export function useUpdateItemMutation() {
-  const queryClient = useQueryClient();
-  return useMutation<
-    ShoppingItem,
-    Error,
-    { itemId: string; updates: Partial<ShoppingItem> }
-  >({
-    mutationFn: ({ itemId, updates }) => updateItem(itemId, updates),
-    onSuccess: (updatedItem) => {
-      queryClient.invalidateQueries({ queryKey: ["list", updatedItem.listId] });
-      toast.success("Item updated successfully");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to update item.");
-    },
-  });
-}
+// export function useUpdateItemMutation() {
+//   const queryClient = useQueryClient();
+//   return useMutation<
+//     ShoppingItem,
+//     Error,
+//     { itemId: string; updates: Partial<ShoppingItem> }
+//   >({
+//     mutationFn: ({ itemId, updates }) => updateItem(itemId, updates),
+//     onSuccess: (updatedItem) => {
+//       queryClient.invalidateQueries({ queryKey: ["list", updatedItem.listId] });
+//       toast.success("Item updated successfully");
+//     },
+//     onError: (error) => {
+//       toast.error(error.message || "Failed to update item.");
+//     },
+//   });
+// }
 
 export function useDeleteItemMutation() {
   const queryClient = useQueryClient();

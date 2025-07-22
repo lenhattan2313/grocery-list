@@ -14,7 +14,7 @@ import {
 } from "@/hooks/use-lists-query";
 import { ShoppingItem } from "@/types";
 import { AddItemForm } from "./list-details/add-item-form";
-import { itemSchema } from "@/schema/item-schema";
+import { CreateItemSchema } from "@/schema/item-schema";
 import { ListDrawerHeader } from "./list-details/list-drawer-header";
 import { ShoppingList } from "./list-details/shopping-list";
 import { SmartSuggestions } from "./list-details/smart-suggestions";
@@ -37,7 +37,7 @@ export function ListDetailsDrawer({
     formState: { isSubmitting },
     reset,
   } = useForm({
-    resolver: zodResolver(itemSchema),
+    resolver: zodResolver(CreateItemSchema),
   });
 
   const { data: list, isLoading, error, isSuccess } = useListQuery(listId);
@@ -72,7 +72,7 @@ export function ListDetailsDrawer({
     return { completed, total, percentage };
   }, [items]);
 
-  const handleAddItem = (data: z.infer<typeof itemSchema>) => {
+  const handleAddItem = (data: z.infer<typeof CreateItemSchema>) => {
     if (!listId) return;
 
     const newItem: ShoppingItem = {
@@ -125,7 +125,7 @@ export function ListDetailsDrawer({
     });
   };
 
-  const handleSaveEdit = (data: z.infer<typeof itemSchema>) => {
+  const handleSaveEdit = (data: z.infer<typeof CreateItemSchema>) => {
     if (!editingItemId) return;
 
     setItems((prevItems) =>
@@ -149,7 +149,7 @@ export function ListDetailsDrawer({
       quantity: item.quantity,
       unit: item.unit,
       isCompleted: item.isCompleted,
-      notes: item.notes,
+      notes: item.notes ?? null,
       listId: item.listId,
     }));
     await updateListItemsMutation.mutateAsync({

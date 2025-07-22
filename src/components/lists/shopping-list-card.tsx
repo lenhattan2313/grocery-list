@@ -6,8 +6,10 @@ import {
   useUpdateListMutation,
 } from "@/hooks/use-lists-query";
 import { Prisma } from "@prisma/client";
-import { MoreVertical, Trash2, Edit, Check } from "lucide-react";
+import { MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
 import { ClientRelativeTime } from "@/components/common/client-relative-time";
+import { useSession } from "next-auth/react";
+import { useHouseholdQuery } from "@/hooks/use-household-query";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { ShareListDialog } from "./share-list-dialog";
+import { useDialog } from "@/components/common/dialog-service";
 
 type ShoppingListWithItems = Prisma.ShoppingListGetPayload<{
   include: { items: true };
@@ -45,6 +49,9 @@ const ShoppingListCardComponent = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(list.name);
   const [isDeleting, startDeleteTransition] = useTransition();
+  const { showDialog } = useDialog();
+  const { data: session } = useSession();
+  const { household } = useHouseholdQuery();
   const [, startTransition] = useTransition();
   const [optimisticList, setOptimisticList] = useOptimistic(
     list,
@@ -91,23 +98,6 @@ const ShoppingListCardComponent = ({
     });
   };
 
-  const handleToggleComplete = () => {
-    const newStatus = !optimisticList.isCompleted;
-    startTransition(() => {
-      setOptimisticList({
-        isCompleted: newStatus,
-        items: optimisticList.items.map((item) => ({
-          ...item,
-          isCompleted: newStatus,
-        })),
-      });
-      updateMutation.mutate({
-        id: optimisticList.id,
-        updates: { isCompleted: newStatus },
-      });
-    });
-  };
-
   const handleEdit = () => {
     setIsEditing(true);
   };
@@ -140,9 +130,24 @@ const ShoppingListCardComponent = ({
     }
   };
 
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    showDialog({
+      id: "share-list-dialog",
+      title: "Share List",
+      content: <ShareListDialog listId={optimisticList.id} />,
+      showCloseButton: false,
+    });
+  };
+
   if (isDeleting) {
     return null; // Optimistically remove the card
   }
+
+  const otherMembers = household?.members.filter(
+    (member) => member.userId !== session?.user?.id
+  );
+  const canShare = household && otherMembers && otherMembers.length > 0;
 
   return (
     <div onClick={() => onViewList(optimisticList.id)}>
@@ -213,7 +218,7 @@ const ShoppingListCardComponent = ({
           </div>
           <Progress value={progress} className="mt-2" aria-label="Progress" />
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex justify-between">
           {isEditing ? (
             <div className="flex w-full justify-end gap-2">
               <Button
@@ -239,26 +244,17 @@ const ShoppingListCardComponent = ({
               </Button>
             </div>
           ) : (
+            <div />
+          )}
+          {canShare && (
             <Button
               variant="outline"
               size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleToggleComplete();
-              }}
-              disabled={updateMutation.isPending}
-              aria-label={
-                optimisticList.isCompleted
-                  ? "Mark as Incomplete"
-                  : "Mark as Complete"
-              }
+              onClick={handleShareClick}
+              aria-label="Share list"
             >
-              <Check className="mr-2 h-4 w-4" />
-              <span>
-                {optimisticList.isCompleted
-                  ? "Mark as Incomplete"
-                  : "Mark as Complete"}
-              </span>
+              <Share2 className="mr-2 h-4 w-4" />
+              <span>Share</span>
             </Button>
           )}
         </CardFooter>

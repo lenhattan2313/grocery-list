@@ -15,10 +15,10 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { UNIT_OPTIONS } from "@/constants/unit";
-import { itemSchema } from "@/schema/item-schema";
+import { CreateItemSchema } from "@/schema/item-schema";
 
 interface AddItemFormProps {
-  onAddItem: (data: z.infer<typeof itemSchema>) => void;
+  onAddItem: (data: z.infer<typeof CreateItemSchema>) => void;
   isAdding: boolean;
   listId: string;
 }
@@ -31,7 +31,7 @@ export function AddItemForm({ onAddItem, isAdding }: AddItemFormProps) {
     reset,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(itemSchema),
+    resolver: zodResolver(CreateItemSchema),
     defaultValues: {
       name: "",
       quantity: 1,
@@ -39,7 +39,7 @@ export function AddItemForm({ onAddItem, isAdding }: AddItemFormProps) {
     },
   });
 
-  const handleFormSubmit = (data: z.infer<typeof itemSchema>) => {
+  const handleFormSubmit = (data: z.infer<typeof CreateItemSchema>) => {
     onAddItem(data);
     reset();
   };

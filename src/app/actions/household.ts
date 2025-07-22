@@ -1,3 +1,5 @@
+"use server";
+
 import { prisma } from "@/lib/db";
 import { Role } from "@/constants/role";
 
@@ -83,7 +85,9 @@ export async function saveMember(
   }
 
   const data = {
-    ...memberData,
+    role: memberData.role,
+    dietaryRestrictions: memberData.dietaryRestrictions,
+    allergies: memberData.allergies,
     userId: user.id,
     householdId,
   };
@@ -96,7 +100,6 @@ export async function saveMember(
     : await prisma.householdMember.create({
         data,
       });
-
   return member;
 }
 

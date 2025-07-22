@@ -3,22 +3,13 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
-
-const CreateListSchema = z.object({
-  name: z
-    .string()
-    .min(1, "List name is required")
-    .max(100, "List name too long"),
-});
-
-const UpdateListSchema = z.object({
-  name: z
-    .string()
-    .min(1, "List name is required")
-    .max(100, "List name too long")
-    .optional(),
-  isCompleted: z.boolean().optional(),
-});
+import { revalidatePath } from "next/cache";
+import { CreateListSchema } from "@/schema/list-schema";
+import {
+  CreateItemSchema,
+  UpdateCreateItemSchema,
+  UpdateListItemsSchema,
+} from "@/schema/item-schema";
 
 export async function getLists() {
   const session = await auth();
@@ -26,12 +17,33 @@ export async function getLists() {
 
   const lists = await prisma.shoppingList.findMany({
     where: {
-      userId: session.user.id,
+      OR: [
+        { userId: session.user.id },
+        {
+          household: {
+            members: {
+              some: {
+                userId: session.user.id,
+              },
+            },
+          },
+        },
+      ],
     },
     include: {
       items: {
         orderBy: {
           createdAt: "asc",
+        },
+      },
+      user: true,
+      household: {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
         },
       },
     },
@@ -55,58 +67,110 @@ export async function createList(name: string) {
     },
     include: {
       items: true,
+      user: true,
+      household: {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
     },
   });
 
+  revalidatePath("/list");
   return newList;
 }
 
 export async function updateList(
-  id: string,
-  updates: z.infer<typeof UpdateListSchema>
+  listId: string,
+  updates: {
+    name?: string;
+    isCompleted?: boolean;
+    householdId?: string | null;
+  }
 ) {
   const session = await auth();
-  if (!session?.user?.id) return null;
-  const validatedData = UpdateListSchema.parse(updates);
-
-  // If the completion status is not being updated, just update the list name.
-  if (validatedData.isCompleted === undefined) {
-    const updatedList = await prisma.shoppingList.update({
-      where: {
-        id,
-        userId: session.user.id,
-      },
-      data: validatedData,
-      include: {
-        items: {
-          orderBy: {
-            createdAt: "asc",
-          },
-        },
-      },
-    });
-    return updatedList;
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
   }
 
-  // If the completion status is being updated, update the list and all its items in a transaction.
-  const [updatedList] = await prisma.$transaction([
-    prisma.shoppingList.update({
-      where: { id, userId: session.user.id },
-      data: validatedData,
-      include: {
-        items: {
-          orderBy: {
-            createdAt: "asc",
+  const list = await prisma.shoppingList.findFirst({
+    where: {
+      id: listId,
+      OR: [
+        { userId: session.user.id },
+        {
+          household: {
+            members: {
+              some: {
+                userId: session.user.id,
+              },
+            },
+          },
+        },
+      ],
+    },
+    select: { userId: true },
+  });
+
+  if (!list) {
+    throw new Error(
+      "List not found or you don't have permission to update it."
+    );
+  }
+
+  // Only the owner can update the list details like name and completion status.
+  if (list.userId !== session.user.id) {
+    throw new Error("Only the owner can update this list.");
+  }
+
+  const updateData: {
+    name?: string;
+    isCompleted?: boolean;
+    householdId?: string | null;
+  } = {};
+  if (updates.name) updateData.name = updates.name;
+  if (updates.isCompleted !== undefined)
+    updateData.isCompleted = updates.isCompleted;
+  if (updates.householdId !== undefined) {
+    if (updates.householdId === null) {
+      updateData.householdId = null;
+    } else {
+      // Verify user is a member of the household they are assigning the list to
+      const householdMember = await prisma.householdMember.findFirst({
+        where: {
+          householdId: updates.householdId,
+          userId: session.user.id,
+        },
+      });
+      if (!householdMember) {
+        throw new Error("You are not a member of this household.");
+      }
+      updateData.householdId = updates.householdId;
+    }
+  }
+
+  const updatedList = await prisma.shoppingList.update({
+    where: { id: listId, userId: session.user.id },
+    data: updateData,
+    include: {
+      items: true,
+      user: true,
+      household: {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
           },
         },
       },
-    }),
-    prisma.shoppingItem.updateMany({
-      where: { listId: id },
-      data: { isCompleted: validatedData.isCompleted },
-    }),
-  ]);
-
+    },
+  });
+  revalidatePath("/list");
   return updatedList;
 }
 
@@ -126,10 +190,21 @@ export async function getList(id: string) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const list = await prisma.shoppingList.findUnique({
+  const list = await prisma.shoppingList.findFirst({
     where: {
       id,
-      userId: session.user.id,
+      OR: [
+        { userId: session.user.id },
+        {
+          household: {
+            members: {
+              some: {
+                userId: session.user.id,
+              },
+            },
+          },
+        },
+      ],
     },
     include: {
       items: {
@@ -137,17 +212,21 @@ export async function getList(id: string) {
           createdAt: "asc",
         },
       },
+      user: true,
+      household: {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
     },
   });
 
   return list;
 }
-
-const CreateItemSchema = z.object({
-  name: z.string().min(1).max(100),
-  quantity: z.number().min(1),
-  unit: z.string(),
-});
 
 export async function addItem(
   listId: string,
@@ -179,22 +258,14 @@ export async function addItem(
   return newItem;
 }
 
-const UpdateItemSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  quantity: z.number().min(1).optional(),
-  unit: z.string().optional(),
-  isCompleted: z.boolean().optional(),
-  notes: z.string().nullable().optional(),
-});
-
 export async function updateItem(
   itemId: string,
-  updates: z.infer<typeof UpdateItemSchema>
+  updates: z.infer<typeof UpdateCreateItemSchema>
 ) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Not authenticated");
 
-  const validatedData = UpdateItemSchema.parse(updates);
+  const validatedData = UpdateCreateItemSchema.parse(updates);
 
   const item = await prisma.shoppingItem.findUnique({
     where: { id: itemId },
@@ -230,15 +301,6 @@ export async function deleteItem(itemId: string) {
     where: { id: itemId },
   });
 }
-
-const UpdateListItemsSchema = z.array(
-  z.object({
-    name: z.string().min(1).max(100),
-    quantity: z.number().min(1),
-    unit: z.string(),
-    isCompleted: z.boolean(),
-  })
-);
 
 export async function updateListItems(
   listId: string,
@@ -281,6 +343,16 @@ export async function updateListItems(
       items: {
         orderBy: {
           createdAt: "asc",
+        },
+      },
+      user: true,
+      household: {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
         },
       },
     },
