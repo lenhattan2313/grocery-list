@@ -1,7 +1,8 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { HouseholdSection } from "@/components/profile/household-section";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useHouseholdQuery } from "@/hooks/use-household-query";
@@ -46,9 +47,9 @@ export function ProfileDetails() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-16">
       {/* User Profile Section */}
-      <Card className="p-6 gap-0">
+      <Card className="p-4 gap-0">
         <h3 className="text-lg font-semibold text-gray-900">Your Profile</h3>
         <div className="mt-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -69,6 +70,16 @@ export function ProfileDetails() {
         currentUserId={session.user.id!}
         household={household}
       />
+
+      {/* Logout Section */}
+
+      <Button
+        variant="outline"
+        className="text-red-500 border-red-500"
+        onClick={() => signOut({ callbackUrl: "/signin" })}
+      >
+        Log Out
+      </Button>
     </div>
   );
 }

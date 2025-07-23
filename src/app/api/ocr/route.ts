@@ -12,17 +12,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const credentialsJson = process.env.GOOGLE_CREDENTIALS_JSON;
-  if (!credentialsJson) {
-    console.error(
-      "Google Cloud credentials JSON is not set in environment variables."
-    );
-    return NextResponse.json(
-      { error: "OCR service is not configured." },
-      { status: 500 }
-    );
-  }
-
   try {
     const keyFilename = path.join(
       process.cwd(),

@@ -1,16 +1,26 @@
 import Pusher from "pusher";
+import { config } from "@/config";
 
 let pusherInstance: Pusher | null = null;
 
 export const getPusherInstance = () => {
-  if (!pusherInstance) {
-    pusherInstance = new Pusher({
-      appId: process.env.PUSHER_APP_ID!,
-      key: process.env.NEXT_PUBLIC_PUSHER_KEY!,
-      secret: process.env.PUSHER_SECRET!,
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-      useTLS: true,
-    });
+  if (pusherInstance) {
+    return pusherInstance;
   }
+
+  const { appId, key, secret, cluster } = config.pusher;
+
+  if (!appId || !key || !secret || !cluster) {
+    throw new Error("Pusher configuration is incomplete.");
+  }
+
+  pusherInstance = new Pusher({
+    appId,
+    key,
+    secret,
+    cluster,
+    useTLS: true,
+  });
+
   return pusherInstance;
 };

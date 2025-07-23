@@ -20,23 +20,43 @@ export default function SignInPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form
-            action={async () => {
-              "use server";
-              await signIn("google", { redirectTo: "/" });
-            }}
-          >
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              variant="outline"
-              aria-label="Continue with Google"
+          <div className="space-y-4">
+            <form
+              action={async () => {
+                "use server";
+                await signIn("google", { redirectTo: "/" });
+              }}
             >
-              <GoogleLogo className="mr-2 h-5 w-5" />
-              Continue with Google
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                variant="outline"
+                aria-label="Continue with Google"
+              >
+                <GoogleLogo className="mr-2 h-5 w-5" />
+                Continue with Google
+              </Button>
+            </form>
+            {process.env.NODE_ENV === "development" && (
+              <form
+                action={async () => {
+                  "use server";
+                  await signIn("credentials", { redirectTo: "/" });
+                }}
+              >
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="lg"
+                  variant="default"
+                  aria-label="Continue as Demo User"
+                >
+                  Continue as Demo User
+                </Button>
+              </form>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

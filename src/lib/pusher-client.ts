@@ -1,10 +1,14 @@
 import PusherClient from "pusher-js";
 
+import { config } from "@/config";
+
 declare global {
   interface Window {
     pusherClientInstance: PusherClient | undefined;
   }
 }
+
+let pusherClientInstance: PusherClient | null = null;
 
 // This function should be called on the client side only.
 export function getPusherClient(): PusherClient {
@@ -14,16 +18,24 @@ export function getPusherClient(): PusherClient {
     return {} as PusherClient;
   }
 
-  if (!window.pusherClientInstance) {
-    window.pusherClientInstance = new PusherClient(
-      process.env.NEXT_PUBLIC_PUSHER_KEY!,
-      {
-        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-        authEndpoint: "/api/pusher/auth",
-        authTransport: "ajax",
-      }
-    );
+  if (pusherClientInstance) {
+    return pusherClientInstance;
   }
 
-  return window.pusherClientInstance;
+  const { key, cluster } = config.publicPusher;
+
+  if (!key || !cluster) {
+    console.error("Pusher key or cluster is not defined in the client.");
+    // Depending on the desired behavior, you could throw an error
+    // or return a mock/dummy object.
+    return {} as PusherClient;
+  }
+
+  pusherClientInstance = new PusherClient(key, {
+    cluster,
+    authEndpoint: "/api/pusher/auth",
+    authTransport: "ajax",
+  });
+
+  return pusherClientInstance;
 }
