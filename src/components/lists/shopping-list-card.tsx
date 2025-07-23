@@ -169,7 +169,12 @@ const ShoppingListCardComponent = ({
                 />
               </div>
             ) : (
-              <CardTitle className="truncate">{optimisticList.name}</CardTitle>
+              <CardTitle className="truncate">
+                {optimisticList.name}{" "}
+                {!isOwner && (
+                  <Badge variant="secondary">Shared</Badge>
+                )}
+              </CardTitle>
             )}
 
             {!isEditing && isOwner && (
