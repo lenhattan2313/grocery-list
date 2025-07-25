@@ -26,6 +26,9 @@ import { IngredientList } from "./ingredient-list";
 import { CreateRecipeForm } from "@/types";
 import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
 import { ImageToTextButton } from "@/components/recipes/image-to-text-button";
+import Image from "next/image";
+import ChatGptLogo from "@/assets/ChatGPT_logo.png";
+import { useGenerateRecipeMutation } from "@/hooks/use-generate-recipe-mutation";
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Recipe name is required"),
@@ -77,6 +80,10 @@ export function RecipeFormDrawer({
   onSubmit,
 }: RecipeFormDrawerProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAIPrompt, setShowAIPrompt] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const { mutate: generateRecipe, isPending: isGenerating } =
+    useGenerateRecipeMutation();
 
   const form = useForm<CreateRecipeForm>({
     resolver: zodResolver(recipeFormSchema),
@@ -109,6 +116,18 @@ export function RecipeFormDrawer({
     }
   }, [open, mode, form]);
 
+  const handleGenerateRecipe = () => {
+    if (!aiPrompt) return;
+    form.reset(defaultValues);
+    generateRecipe(aiPrompt, {
+      onSuccess: (data) => {
+        form.reset(data);
+        setShowAIPrompt(false);
+        setAiPrompt("");
+      },
+    });
+  };
+
   const handleSubmit = async (data: CreateRecipeForm) => {
     try {
       setIsSubmitting(true);
@@ -128,11 +147,41 @@ export function RecipeFormDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="h-[95vh]">
         <DrawerHeader className="border-b border-border">
-          <DrawerTitle>
-            {mode === "add" ? "Add New Recipe" : "Edit Recipe"}
-          </DrawerTitle>
+          <div className="flex justify-between items-center">
+            <DrawerTitle>
+              {mode === "add" ? "Add New Recipe" : "Edit Recipe"}
+            </DrawerTitle>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowAIPrompt(!showAIPrompt)}
+              aria-label="Generate with AI"
+              className="rounded-full animate-pulse-once"
+            >
+              <Image src={ChatGptLogo} alt="ChatGPT logo" className="h-4 w-4" />
+            </Button>
+          </div>
         </DrawerHeader>
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="p-4 space-y-4 overflow-y-scroll">
+          {showAIPrompt && (
+            <div className="space-y-2">
+              <Textarea
+                placeholder="e.g., 'a healthy salmon recipe with asparagus'"
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                autoFocus
+              />
+              <Button
+                onClick={handleGenerateRecipe}
+                disabled={isGenerating || !aiPrompt}
+                className="w-full"
+                isLoading={isGenerating}
+              >
+                Generate Recipe with AI
+              </Button>
+            </div>
+          )}
+
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}

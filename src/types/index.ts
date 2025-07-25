@@ -99,7 +99,11 @@ export interface CreateRecipeForm {
     unit: string;
   }[];
 }
-
+export interface AiIngredient {
+  name: string;
+  quantity: number | string;
+  unit: string;
+}
 export interface CreateFamilyMemberForm {
   name: string;
   email: string;
