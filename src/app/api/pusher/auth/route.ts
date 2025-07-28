@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth";
 import { getPusherInstance } from "@/lib/pusher";
-import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {

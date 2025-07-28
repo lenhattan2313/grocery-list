@@ -31,7 +31,7 @@ function AddListForm({ onSubmit, onCancel, isSubmitting }: AddListFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       <div className="space-y-4 py-4">
-        <div className="space-y-2">
+        <div className="space-y-2 mx-2">
           <Label htmlFor="list-name">List Name</Label>
           <Input
             id="list-name"
