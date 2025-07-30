@@ -146,7 +146,7 @@ const ShoppingListCardComponent = ({
     return null; // Optimistically remove the card
   }
 
-  const otherMembers = household?.members.filter(
+  const otherMembers = household?.members?.filter(
     (member) => member.userId !== session?.user?.id
   );
   const canShare =

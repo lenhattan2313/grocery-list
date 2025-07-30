@@ -79,6 +79,51 @@ export async function createList(name: string) {
   return newList;
 }
 
+export async function createListWithItems(
+  name: string,
+  items: z.infer<typeof UpdateListItemsSchema>
+) {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+
+  const validatedData = CreateListSchema.parse({ name });
+  const validatedItems = UpdateListItemsSchema.parse(items);
+
+  const newList = await prisma.shoppingList.create({
+    data: {
+      name: validatedData.name,
+      userId: session.user.id,
+      items: {
+        create: validatedItems.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.unit,
+          notes: item.notes,
+        })),
+      },
+    },
+    include: {
+      items: {
+        orderBy: {
+          createdAt: "asc",
+        },
+      },
+      user: true,
+      household: {
+        include: {
+          members: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return newList;
+}
+
 export async function updateNameList(listId: string, name: string) {
   const session = await auth();
   if (!session?.user?.id) {

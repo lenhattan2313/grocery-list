@@ -133,7 +133,17 @@ export function useOfflineCreateListMutation() {
 
       return { previousLists };
     },
-    onSuccess: () => {
+    onSuccess: (newList) => {
+      // Update the optimistic list with the real list data
+      queryClient.setQueryData<ShoppingListWithItems[]>(
+        ["lists"],
+        (oldLists = []) => {
+          return oldLists.map((list) =>
+            list.id.startsWith("optimistic-") ? newList : list
+          );
+        }
+      );
+
       toast.success(
         isOnline
           ? "List created successfully"

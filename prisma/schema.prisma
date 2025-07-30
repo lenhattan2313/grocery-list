@@ -126,6 +126,7 @@ model ShoppingList {
   items     ShoppingItem[]
   household Household?     @relation(fields: [householdId], references: [id])
 
+  @@unique([name, userId, householdId])
   @@map("shopping_lists")
 }
 

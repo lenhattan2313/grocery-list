@@ -8,6 +8,10 @@ export const makeQueryClient = () =>
         retry: false,
         refetchOnWindowFocus: false,
         refetchOnMount: false,
+        networkMode: "always",
+      },
+      mutations: {
+        networkMode: "always",
       },
     },
   });

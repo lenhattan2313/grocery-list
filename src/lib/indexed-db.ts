@@ -106,6 +106,12 @@ class IndexedDBService {
     return (await db.get(STORES.LISTS, id)) || null;
   }
 
+  async getListByName(name: string): Promise<ShoppingListWithItems | null> {
+    const db = await this.ensureDB();
+    const lists = await db.getAll(STORES.LISTS);
+    return lists.find((list) => list.name === name) || null;
+  }
+
   async saveList(list: ShoppingListWithItems): Promise<void> {
     const db = await this.ensureDB();
     await db.put(STORES.LISTS, list);

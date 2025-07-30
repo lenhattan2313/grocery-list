@@ -18,7 +18,7 @@ export function ShareListDialog({ listId }: ShareListDialogProps) {
   const updateListMutation = useUpdateListMutation();
   const hideDialog = useDialogStore((state) => state.hideDialog);
 
-  const otherMembers = household?.members.filter(
+  const otherMembers = household?.members?.filter(
     (member) => member.userId !== session?.user?.id
   );
 
