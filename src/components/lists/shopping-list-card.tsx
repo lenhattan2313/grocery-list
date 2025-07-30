@@ -2,9 +2,9 @@
 
 import { useOptimistic, useTransition, memo } from "react";
 import {
-  useDeleteListMutation,
-  useUpdateNameListMutation,
-} from "@/hooks/use-lists-query";
+  useOfflineDeleteListMutation,
+  useOfflineUpdateListNameMutation,
+} from "@/hooks/use-offline-lists";
 import { Prisma } from "@prisma/client";
 import { MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
 import { ClientRelativeTime } from "@/components/common/client-relative-time";
@@ -76,8 +76,8 @@ const ShoppingListCardComponent = ({
 
   const isOwner = session?.user?.id === optimisticList.userId;
 
-  const deleteMutation = useDeleteListMutation();
-  const updateMutation = useUpdateNameListMutation();
+  const deleteMutation = useOfflineDeleteListMutation();
+  const updateMutation = useOfflineUpdateListNameMutation();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -117,7 +117,7 @@ const ShoppingListCardComponent = ({
     startTransition(() => {
       setOptimisticList({ name: editedName });
       updateMutation.mutate({
-        id: optimisticList.id,
+        listId: optimisticList.id,
         name: editedName,
       });
     });
@@ -171,9 +171,7 @@ const ShoppingListCardComponent = ({
             ) : (
               <CardTitle className="truncate">
                 {optimisticList.name}{" "}
-                {!isOwner && (
-                  <Badge variant="secondary">Shared</Badge>
-                )}
+                {!isOwner && <Badge variant="secondary">Shared</Badge>}
               </CardTitle>
             )}
 

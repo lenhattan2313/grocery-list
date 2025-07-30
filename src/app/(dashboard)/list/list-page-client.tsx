@@ -1,25 +1,31 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useListsQuery } from "@/hooks/use-lists-query";
+import { useSearchParamState } from "@/hooks/use-search-params";
+import { useOfflineListsQuery } from "@/hooks/use-offline-lists";
 import { ShoppingListCard } from "@/components/lists/shopping-list-card";
 import { showAddListDialog } from "@/components/lists/add-list-dialog";
 import { ListDetailsDrawer } from "@/components/lists/list-details-drawer";
 import { Plus } from "lucide-react";
-import { PageHeader } from "@/components/common/page-header";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
-import { PageHeaderSearch } from "@/components/common/page-header-search";
 import { PageSkeleton } from "@/components/common/page-skeleton";
-import { ShoppingListWithItems } from "@/types/list";
 import { useRealtimeLists } from "@/hooks/use-realtime-lists";
+import { ShoppingListWithItems } from "@/types/list";
+import { NetworkStatus } from "@/components/common/network-status";
+import { ShoppingList } from "@/types";
 
 interface ListsPageClientProps {
   initialLists: ShoppingListWithItems[];
 }
 
 export function ListsPageClient({ initialLists }: ListsPageClientProps) {
-  const { data: lists = [], isLoading, error } = useListsQuery(initialLists);
-  const [searchQuery, setSearchQuery] = useState("");
+  const {
+    data: lists = initialLists,
+    isLoading,
+    error,
+    isError,
+  } = useOfflineListsQuery(initialLists);
+  const [searchQuery] = useSearchParamState("q", "");
   const [viewingListId, setViewingListId] = useState<string | null>(null);
 
   useRealtimeLists();
@@ -32,11 +38,16 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
     list.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Find the selected list from the filtered lists
+  const selectedList = viewingListId
+    ? filteredLists.find((list) => list.id === viewingListId) || null
+    : null;
+
   if (isLoading) {
     return <PageSkeleton />;
   }
 
-  if (error) {
+  if (isError && error) {
     return (
       <div className="text-center py-12 text-red-600">
         <p>Error loading lists: {error.message}</p>
@@ -46,10 +57,6 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
 
   return (
     <div>
-      <PageHeader title="List" className="mb-4">
-        <PageHeaderSearch onSearch={setSearchQuery} />
-      </PageHeader>
-
       {filteredLists.length === 0 ? (
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
@@ -91,11 +98,16 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
       />
 
       {/* List Details Drawer */}
+      {selectedList && (
       <ListDetailsDrawer
-        listId={viewingListId}
+        list={selectedList as ShoppingList}
         open={!!viewingListId}
-        onOpenChange={(open) => !open && setViewingListId(null)}
-      />
+          onOpenChange={(open) => !open && setViewingListId(null)}
+        />
+      )}
+
+      {/* Network Status */}
+      <NetworkStatus />
     </div>
   );
 }

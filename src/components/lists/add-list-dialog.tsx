@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useCreateListMutation } from "@/hooks/use-lists-query";
+import { useOfflineCreateListMutation } from "@/hooks/use-offline-lists";
 import { dialogService } from "@/stores/dialog-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +77,7 @@ function AddListForm({ onSubmit, onCancel, isSubmitting }: AddListFormProps) {
 }
 
 function AddListDialogWrapper() {
-  const mutation = useCreateListMutation();
+  const mutation = useOfflineCreateListMutation();
 
   const handleSubmit = (name: string) => {
     mutation.mutate(name, {

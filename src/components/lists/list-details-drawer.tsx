@@ -1,18 +1,15 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertCircle, Save } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 
-import {
-  useListQuery,
-  useUpdateListItemsMutation,
-} from "@/hooks/use-lists-query";
-import { ShoppingItem } from "@/types";
+import { useOfflineUpdateListItemsMutation } from "@/hooks/use-offline-lists";
+import { ShoppingItem, ShoppingList as ShoppingListType } from "@/types";
 import { AddItemForm } from "./list-details/add-item-form";
 import { CreateItemSchema } from "@/schema/item-schema";
 import { ListDrawerHeader } from "./list-details/list-drawer-header";
@@ -21,18 +18,21 @@ import { SmartSuggestions } from "./list-details/smart-suggestions";
 import { useSession } from "next-auth/react";
 
 interface ListDetailsDrawerProps {
-  listId: string | null;
+  list: ShoppingListType;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function ListDetailsDrawer({
-  listId,
+  list,
   open,
   onOpenChange,
 }: ListDetailsDrawerProps) {
   const { data: session } = useSession();
-  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [items, setItems] = useState<ShoppingItem[]>(
+    JSON.parse(JSON.stringify(list.items))
+  );
+
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   const {
@@ -42,10 +42,9 @@ export function ListDetailsDrawer({
     resolver: zodResolver(CreateItemSchema),
   });
 
-  const { data: list, isLoading, error, isSuccess } = useListQuery(listId);
-  const updateListItemsMutation = useUpdateListItemsMutation();
+  const updateListItemsMutation = useOfflineUpdateListItemsMutation();
 
-  const originalItems = useMemo(() => list?.items ?? [], [list]);
+  const originalItems = useMemo(() => list.items, [list]);
   const hasChanges = useMemo(
     () => JSON.stringify(originalItems) !== JSON.stringify(items),
     [originalItems, items]
@@ -55,12 +54,6 @@ export function ListDetailsDrawer({
     () => items.map((item) => item.name.toLowerCase()),
     [items]
   );
-
-  useEffect(() => {
-    if (isSuccess && list) {
-      setItems(JSON.parse(JSON.stringify(list.items)));
-    }
-  }, [isSuccess, list]);
 
   const progress = useMemo(() => {
     if (items.length === 0) {
@@ -75,11 +68,11 @@ export function ListDetailsDrawer({
   }, [items]);
 
   const handleAddItem = (data: z.infer<typeof CreateItemSchema>) => {
-    if (!listId) return;
+    if (!list?.id) return;
 
     const newItem: ShoppingItem = {
       id: `temp-${Date.now()}`,
-      listId,
+      listId: list.id,
       ...data,
       isCompleted: false,
       createdAt: new Date(),
@@ -90,14 +83,14 @@ export function ListDetailsDrawer({
   };
 
   const handleAddItemFromSuggestion = (itemName: string) => {
-    if (!listId) return;
+    if (!list?.id) return;
 
     const newItem: ShoppingItem = {
       id: `temp-${Date.now()}`,
-      listId,
+      listId: list.id,
       name: itemName,
       quantity: 1,
-      unit: "pcs",
+      unit: "piece",
       isCompleted: false,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -107,15 +100,15 @@ export function ListDetailsDrawer({
   };
 
   const handleToggleItem = (itemId: string) => {
-    setItems((prevItems) =>
-      prevItems.map((item) =>
+    setItems((prev) =>
+      prev.map((item) =>
         item.id === itemId ? { ...item, isCompleted: !item.isCompleted } : item
       )
     );
   };
 
   const handleDeleteItem = (itemId: string) => {
-    setItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    setItems((prev) => prev.filter((item) => item.id !== itemId));
   };
 
   const handleEditItem = (item: ShoppingItem) => {
@@ -130,58 +123,42 @@ export function ListDetailsDrawer({
   const handleSaveEdit = (data: z.infer<typeof CreateItemSchema>) => {
     if (!editingItemId) return;
 
-    setItems((prevItems) =>
-      prevItems.map((item) =>
+    setItems((prev) =>
+      prev.map((item) =>
         item.id === editingItemId
           ? { ...item, ...data, updatedAt: new Date() }
           : item
       )
     );
     setEditingItemId(null);
+    reset();
   };
 
   const handleCancelEdit = () => {
     setEditingItemId(null);
+    reset();
   };
 
   const handleSaveChanges = async () => {
-    if (!listId) return;
+    if (!list?.id) return;
     const itemsToUpdate = items.map((item) => ({
+      id: item.id,
       name: item.name,
       quantity: item.quantity,
       unit: item.unit,
       isCompleted: item.isCompleted,
       notes: item.notes ?? null,
       listId: item.listId,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
     }));
     await updateListItemsMutation.mutateAsync({
-      listId,
+      listId: list.id,
       items: itemsToUpdate,
     });
     onOpenChange(false);
   };
 
-  if (isLoading) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[calc(100vh-4rem)] flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-  if (error) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center">
-          <AlertCircle className="h-8 w-8 text-red-500" />
-          <p className="mt-2 text-red-600">Error: {error.message}</p>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
-  if (!list) return null;
   const isOwner = session?.user?.id === list.userId;
   return (
     <Drawer
@@ -206,7 +183,7 @@ export function ListDetailsDrawer({
               <AddItemForm
                 onAddItem={handleAddItem}
                 isAdding={isSubmitting}
-                listId={listId as string}
+                listId={list.id}
               />
               <SmartSuggestions
                 onAddItem={handleAddItemFromSuggestion}
@@ -227,22 +204,24 @@ export function ListDetailsDrawer({
             isOwner={isOwner}
           />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t">
-          <Button
-            className="w-full"
-            size="lg"
-            onClick={handleSaveChanges}
-            disabled={updateListItemsMutation.isPending}
-            aria-label="Save Changes"
-          >
-            {updateListItemsMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-4 w-4" />
-            )}
-            Save Changes
-          </Button>
-        </div>
+        {hasChanges && (
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t">
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={handleSaveChanges}
+              disabled={updateListItemsMutation.isPending}
+              aria-label="Save Changes"
+            >
+              {updateListItemsMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Save Changes
+            </Button>
+          </div>
+        )}
       </DrawerContent>
     </Drawer>
   );
