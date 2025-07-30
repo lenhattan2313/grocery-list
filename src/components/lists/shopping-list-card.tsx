@@ -32,6 +32,7 @@ import { Progress } from "@/components/ui/progress";
 import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { ShareListDialog } from "./share-list-dialog";
 import { useDialog } from "@/components/common/dialog-service";
+import { getSequentialIcon, iconMap } from "@/lib/utils";
 
 type ShoppingListWithItems = Prisma.ShoppingListGetPayload<{
   include: { items: true };
@@ -41,11 +42,15 @@ interface ShoppingListCardProps {
   list: ShoppingListWithItems;
   onViewList: (listId: string) => void;
   isPriority?: boolean;
+  index?: number;
 }
+
 const ShoppingListCardComponent = ({
   list,
   onViewList,
+  index = 0,
 }: ShoppingListCardProps) => {
+  console.log("list", list);
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(list.name);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -58,17 +63,14 @@ const ShoppingListCardComponent = ({
     (
       state,
       {
-        isCompleted,
         name,
         items,
       }: {
-        isCompleted?: boolean;
         name?: string;
         items?: ShoppingListWithItems["items"];
       }
     ) => ({
       ...state,
-      isCompleted: isCompleted ?? state.isCompleted,
       name: name ?? state.name,
       items: items ?? state.items,
     })
@@ -159,6 +161,12 @@ const ShoppingListCardComponent = ({
           <div className="flex items-center justify-between">
             {isEditing ? (
               <div className="flex w-full items-center gap-2">
+                {(() => {
+                  const { icon: iconName, color } = getSequentialIcon(index);
+                  const IconComponent =
+                    iconMap[iconName as keyof typeof iconMap];
+                  return <IconComponent className={`h-4 w-4 ${color}`} />;
+                })()}
                 <Input
                   ref={inputRef}
                   value={editedName}
@@ -169,7 +177,13 @@ const ShoppingListCardComponent = ({
                 />
               </div>
             ) : (
-              <CardTitle className="truncate">
+              <CardTitle className="truncate flex items-center gap-2">
+                {(() => {
+                  const { icon: iconName, color } = getSequentialIcon(index);
+                  const IconComponent =
+                    iconMap[iconName as keyof typeof iconMap];
+                  return <IconComponent className={`h-6 w-6 ${color}`} />;
+                })()}
                 {optimisticList.name}{" "}
                 {!isOwner && <Badge variant="secondary">Shared</Badge>}
               </CardTitle>
@@ -216,8 +230,13 @@ const ShoppingListCardComponent = ({
             <span className="text-sm text-muted-foreground">
               {completedItemsCount} / {totalItems} completed
             </span>
-            {optimisticList.isCompleted ? (
-              <Badge variant="secondary">Completed</Badge>
+            {completedItemsCount === totalItems ? (
+              <Badge
+                variant="secondary"
+                className="bg-green-100 text-green-800 border-green-200"
+              >
+                Completed
+              </Badge>
             ) : (
               <Badge variant="outline">In Progress</Badge>
             )}
@@ -279,7 +298,8 @@ function areEqual(
     prevProps.list.isCompleted === nextProps.list.isCompleted &&
     prevProps.list.items.length === nextProps.list.items.length &&
     prevProps.list.updatedAt === nextProps.list.updatedAt &&
-    prevProps.onViewList === nextProps.onViewList
+    prevProps.onViewList === nextProps.onViewList &&
+    prevProps.index === nextProps.index
   );
 }
 

@@ -80,11 +80,12 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto max-h-[calc(100vh-230px)]">
-          {filteredLists.map((list) => (
+          {filteredLists.map((list, index) => (
             <ShoppingListCard
               key={list.id}
               list={list}
               onViewList={handleViewList}
+              index={index}
             />
           ))}
         </div>
