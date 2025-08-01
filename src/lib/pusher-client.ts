@@ -1,6 +1,16 @@
-import PusherClient from "pusher-js";
-
 import { config } from "@/config";
+
+// Define Pusher types
+interface PusherClient {
+  subscribe: (channelName: string) => PusherChannel;
+  unsubscribe: (channelName: string) => void;
+  unbind: (eventName: string) => void;
+}
+
+interface PusherChannel {
+  bind: (eventName: string, callback: (data: unknown) => void) => void;
+  unbind: (eventName: string) => void;
+}
 
 declare global {
   interface Window {
@@ -9,33 +19,57 @@ declare global {
 }
 
 let pusherClientInstance: PusherClient | null = null;
+let pusherPromise: Promise<PusherClient> | null = null;
 
-// This function should be called on the client side only.
-export function getPusherClient(): PusherClient {
+// Dynamic import function for Pusher - ensure it's truly dynamic
+async function loadPusher(): Promise<PusherClient> {
   if (typeof window === "undefined") {
-    // This is a safeguard, as `pusher-js` is intended for client-side use.
-    // This will prevent the app from crashing during server-side rendering.
     return {} as PusherClient;
   }
 
-  if (pusherClientInstance) {
-    return pusherClientInstance;
+  if (pusherPromise) {
+    return pusherPromise;
   }
 
   const { key, cluster } = config.publicPusher;
 
   if (!key || !cluster) {
-    console.error("Pusher key or cluster is not defined in the client.");
-    // Depending on the desired behavior, you could throw an error
-    // or return a mock/dummy object.
     return {} as PusherClient;
   }
 
-  pusherClientInstance = new PusherClient(key, {
-    cluster,
-    authEndpoint: "/api/pusher/auth",
-    authTransport: "ajax",
-  });
+  // Use dynamic import with explicit chunk name to ensure separation
+  pusherPromise = import(/* webpackChunkName: "pusher" */ "pusher-js").then(
+    (PusherClientModule) => {
+      const client = new PusherClientModule.default(key, {
+        cluster,
+        authEndpoint: "/api/pusher/auth",
+        authTransport: "ajax",
+      });
+      pusherClientInstance = client;
+      return client;
+    }
+  );
 
+  return pusherPromise;
+}
+
+// This function should be called on the client side only.
+export async function getPusherClient(): Promise<PusherClient> {
+  if (pusherClientInstance) {
+    return pusherClientInstance;
+  }
+
+  return loadPusher();
+}
+
+// Synchronous version for backward compatibility (returns null if not loaded)
+export function getPusherClientSync(): PusherClient | null {
   return pusherClientInstance;
+}
+
+// Preload Pusher when needed (call this when user is about to need real-time features)
+export function preloadPusher(): void {
+  if (typeof window !== "undefined" && !pusherPromise) {
+    loadPusher();
+  }
 }

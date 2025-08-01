@@ -136,8 +136,8 @@ export function RecipeFormDrawer({
         form.reset();
       }
       onOpenChange(false);
-    } catch (error) {
-      console.error(`Failed to ${mode} recipe:`, error);
+    } catch {
+      // Failed to submit recipe
     } finally {
       setIsSubmitting(false);
     }

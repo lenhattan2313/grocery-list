@@ -20,8 +20,7 @@ export async function POST(req: Request) {
     const authResponse = pusher.authorizeChannel(socketId, channel);
 
     return new Response(JSON.stringify(authResponse));
-  } catch (error) {
-    console.error("Pusher auth error:", error);
+  } catch {
     return new Response("Internal Server Error", { status: 500 });
   }
 }

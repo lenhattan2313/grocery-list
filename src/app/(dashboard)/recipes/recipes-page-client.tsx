@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { RecipeCard } from "@/components/recipes/recipe-card";
-import { RecipeFormDrawer } from "@/components/recipes/recipe-form-drawer";
-import { RecipeViewDrawer } from "@/components/recipes/recipe-view-drawer";
+import { RecipeFormDrawer } from "@/components/dynamic-imports";
+import { RecipeViewDrawer } from "@/components/dynamic-imports";
 import { showRecipeToListDialog } from "@/components/recipes/recipe-to-list-dialog";
 import { CreateRecipeForm } from "@/types";
 import { FloatingActionButton } from "@/components/common/floating-action-button";

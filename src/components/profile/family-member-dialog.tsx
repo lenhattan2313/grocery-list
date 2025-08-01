@@ -72,8 +72,8 @@ export function FamilyMemberDialog({
       await onSubmit(data);
       form.reset();
       onOpenChange(false);
-    } catch (error) {
-      console.error("Failed to submit:", error);
+    } catch {
+      // Failed to submit
     }
   }
 

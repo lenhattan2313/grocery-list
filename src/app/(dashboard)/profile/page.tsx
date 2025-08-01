@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { ProfileDetails } from "@/components/profile/profile-details";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProfileDetails } from "@/components/dynamic-imports";
+
 // export const experimental_ppr = true;
 export default function ProfilePage() {
   return (

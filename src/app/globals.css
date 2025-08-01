@@ -119,9 +119,21 @@
 }
 
 @layer base {
-  * {
+  /* Exclude meta tags and other head elements from universal styling */
+  *:not(meta):not(title):not(link):not(script):not(style):not(head):not(html) {
     @apply border-border outline-ring/50;
   }
+
+  /* Ensure meta tags are properly hidden */
+  meta,
+  title,
+  link,
+  script,
+  style,
+  head {
+    display: none !important;
+  }
+
   body {
     @apply bg-background text-foreground;
   }

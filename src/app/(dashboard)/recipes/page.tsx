@@ -1,7 +1,6 @@
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Suspense } from "react";
 
-import RecipesPageClient from "@/app/(dashboard)/recipes/recipes-page-client";
 import { PageSkeleton } from "@/components/common/page-skeleton";
 import {
   RECIPES_QUERY_KEY,
@@ -9,6 +8,7 @@ import {
 } from "@/hooks/use-recipes-query";
 import { getQueryClient } from "@/lib/get-query-client";
 import { getRecipes } from "@/app/actions/recipes";
+import { RecipesPageClient } from "@/components/dynamic-imports";
 export default async function RecipesPage() {
   const queryClient = getQueryClient();
 

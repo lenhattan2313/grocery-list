@@ -50,7 +50,6 @@ const ShoppingListCardComponent = ({
   onViewList,
   index = 0,
 }: ShoppingListCardProps) => {
-  console.log("list", list);
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(list.name);
   const [isDeleting, startDeleteTransition] = useTransition();
@@ -154,6 +153,10 @@ const ShoppingListCardComponent = ({
   const canShare =
     isOwner && household && otherMembers && otherMembers.length > 0;
 
+  // Memoize icon calculation
+  const { icon: iconName, color } = getSequentialIcon(index);
+  const IconComponent = iconMap[iconName as keyof typeof iconMap];
+
   return (
     <div onClick={() => onViewList(optimisticList.id)}>
       <Card>
@@ -161,12 +164,7 @@ const ShoppingListCardComponent = ({
           <div className="flex items-center justify-between">
             {isEditing ? (
               <div className="flex w-full items-center gap-2">
-                {(() => {
-                  const { icon: iconName, color } = getSequentialIcon(index);
-                  const IconComponent =
-                    iconMap[iconName as keyof typeof iconMap];
-                  return <IconComponent className={`h-4 w-4 ${color}`} />;
-                })()}
+                <IconComponent className={`h-4 w-4 ${color}`} />
                 <Input
                   ref={inputRef}
                   value={editedName}
@@ -178,12 +176,7 @@ const ShoppingListCardComponent = ({
               </div>
             ) : (
               <CardTitle className="truncate flex items-center gap-2">
-                {(() => {
-                  const { icon: iconName, color } = getSequentialIcon(index);
-                  const IconComponent =
-                    iconMap[iconName as keyof typeof iconMap];
-                  return <IconComponent className={`h-6 w-6 ${color}`} />;
-                })()}
+                <IconComponent className={`h-6 w-6 ${color}`} />
                 {optimisticList.name}{" "}
                 {!isOwner && <Badge variant="secondary">Shared</Badge>}
               </CardTitle>
@@ -288,6 +281,7 @@ const ShoppingListCardComponent = ({
     </div>
   );
 };
+
 function areEqual(
   prevProps: ShoppingListCardProps,
   nextProps: ShoppingListCardProps

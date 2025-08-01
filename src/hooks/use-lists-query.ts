@@ -18,7 +18,7 @@ export function useListsQuery(initialData?: ShoppingListWithItems[]) {
   return useQuery<ShoppingListWithItems[], Error>({
     queryKey: ["lists"],
     queryFn: () => getLists(),
-    initialData,
+    initialData: initialData,
   });
 }
 
@@ -265,7 +265,7 @@ export function useUpdateListItemsMutation() {
       }
       toast.error(err.message || "Failed to save list. Please try again.");
     },
-    onSettled: (data, error, { listId }) => {
+    onSettled: (_, __, { listId }) => {
       queryClient.invalidateQueries({ queryKey: ["list", listId] });
       queryClient.invalidateQueries({ queryKey: ["lists"] });
     },

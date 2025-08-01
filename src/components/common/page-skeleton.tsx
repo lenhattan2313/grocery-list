@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { PageHeader } from "@/components/common/page-header";
 
 export function SkeletonCard() {
   return (
@@ -14,16 +13,9 @@ export function SkeletonCard() {
   );
 }
 
-export function PageSkeleton({
-  numCards = 3,
-  title = "List",
-}: {
-  numCards?: number;
-  title?: string;
-}) {
+export function PageSkeleton({ numCards = 3 }: { numCards?: number }) {
   return (
     <div>
-      <PageHeader title={title} className="mb-4" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: numCards }).map((_, index) => (
           <SkeletonCard key={index} />

@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ text });
   } catch (error) {
-    console.error("Error during OCR processing:", error);
     let errorMessage = "An unknown error occurred";
     if (
       typeof error === "object" &&

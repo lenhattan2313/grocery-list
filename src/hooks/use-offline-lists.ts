@@ -56,28 +56,25 @@ export function useOfflineListsQuery(initialData?: ShoppingListWithItems[]) {
   return useQuery<ShoppingListWithItems[], Error>({
     queryKey: ["lists"],
     queryFn: async () => {
-      console.log("useOfflineListsQuery - fetching lists", session?.user?.id);
       if (!session?.user?.id) {
-        console.log("No session user ID, returning empty array");
         return [];
       }
 
       // Use the same getLists function as server-side prefetch
       const result = await getLists();
-      console.log("getLists result:", result.length, "lists");
 
       // If online, also save to IndexedDB for offline access
       if (isOnline) {
         try {
           await offlineSyncService.saveListsToIndexedDB(result);
-        } catch (error) {
-          console.warn("Failed to save lists to IndexedDB:", error);
+        } catch {
+          // Failed to save lists to IndexedDB
         }
       }
 
       return result;
     },
-    initialData,
+    initialData: initialData,
     enabled: sessionStatus === "authenticated" && !!session?.user?.id,
     staleTime: isOnline ? 30000 : Infinity, // Don't refetch when offline
     gcTime: 5 * 60 * 1000, // 5 minutes
@@ -296,8 +293,8 @@ export function useSyncStatus() {
       const queue = await offlineSyncService.getSyncQueue();
       setSyncQueue(queue);
       setIsSyncing(queue.length > 0);
-    } catch (error) {
-      console.error("Failed to get sync status:", error);
+    } catch {
+      // Failed to get sync status
     }
   }, []);
 

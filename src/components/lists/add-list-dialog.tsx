@@ -76,7 +76,7 @@ function AddListForm({ onSubmit, onCancel, isSubmitting }: AddListFormProps) {
   );
 }
 
-function AddListDialogWrapper() {
+export function AddListDialogWrapper() {
   const mutation = useOfflineCreateListMutation();
 
   const handleSubmit = (name: string) => {

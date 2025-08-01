@@ -55,10 +55,6 @@ export async function POST(req: NextRequest) {
     });
 
     if (isUnexpected(response)) {
-      console.error(
-        "Error generating recipe:",
-        JSON.stringify(response.body, null, 2)
-      );
       return NextResponse.json(
         { error: "Failed to generate recipe" },
         { status: 500 }
@@ -75,8 +71,7 @@ export async function POST(req: NextRequest) {
     }
     const parsedRecipe = JSON.parse(recipeJson);
     return NextResponse.json(parsedRecipe);
-  } catch (error) {
-    console.error("Error generating recipe:", error);
+  } catch {
     return NextResponse.json(
       { error: "Failed to generate recipe" },
       { status: 500 }

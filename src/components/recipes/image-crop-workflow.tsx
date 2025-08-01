@@ -89,7 +89,6 @@ export function ImageCropWorkflow({
         const { text } = await response.json();
         onTextExtracted(text);
       } catch (error) {
-        console.error("OCR error:", error);
         const errorMessage =
           error instanceof Error
             ? error.message

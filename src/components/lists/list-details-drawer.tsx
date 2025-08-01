@@ -23,6 +23,7 @@ interface ListDetailsDrawerProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// Export the component for dynamic imports
 export function ListDetailsDrawer({
   list,
   open,

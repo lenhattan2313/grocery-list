@@ -55,8 +55,8 @@ export function useHouseholdQuery() {
       onSuccess: (newHousehold) => {
         queryClient.setQueryData(["household", userId], newHousehold);
       },
-      onError: (error) => {
-        console.error("Failed to create household", error);
+      onError: () => {
+        // Failed to create household
       },
     });
 

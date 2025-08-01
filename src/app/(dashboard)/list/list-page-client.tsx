@@ -1,51 +1,66 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { useSearchParamState } from "@/hooks/use-search-params";
 import { useOfflineListsQuery } from "@/hooks/use-offline-lists";
-import { ShoppingListCard } from "@/components/lists/shopping-list-card";
-import { showAddListDialog } from "@/components/lists/add-list-dialog";
-import { ListDetailsDrawer } from "@/components/lists/list-details-drawer";
+import {
+  AddListDialog,
+  ListDetailsDrawer,
+  ShoppingListCard,
+} from "@/components/dynamic-imports";
 import { Plus } from "lucide-react";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
-import { PageSkeleton } from "@/components/common/page-skeleton";
+// import { PageSkeleton } from "@/components/common/page-skeleton";
 import { useRealtimeLists } from "@/hooks/use-realtime-lists";
-import { ShoppingListWithItems } from "@/types/list";
-import { NetworkStatus } from "@/components/common/network-status";
 import { ShoppingList } from "@/types";
+import { NetworkStatus } from "@/components/common/network-status";
+import { dialogService } from "@/stores/dialog-store";
+import { useState, useCallback, useMemo } from "react";
+import { ShoppingListWithItems } from "@/types/list";
 
-interface ListsPageClientProps {
+export function ListsPageClient({
+  initialLists,
+}: {
   initialLists: ShoppingListWithItems[];
-}
-
-export function ListsPageClient({ initialLists }: ListsPageClientProps) {
+}) {
   const {
     data: lists = initialLists,
-    isLoading,
+    // isLoading,
     error,
     isError,
-  } = useOfflineListsQuery(initialLists);
+  } = useOfflineListsQuery();
   const [searchQuery] = useSearchParamState("q", "");
   const [viewingListId, setViewingListId] = useState<string | null>(null);
 
-  useRealtimeLists();
-
+  const RealtimeWrapper = () => {
+    useRealtimeLists();
+    return null;
+  };
   const handleViewList = useCallback((listId: string) => {
     setViewingListId(listId);
   }, []);
 
-  const filteredLists = lists.filter((list) =>
-    list.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const handleAddList = useCallback(() => {
+    dialogService.showDialog({
+      id: "add-list",
+      title: "Create a New Shopping List",
+      content: <AddListDialog />,
+      maxWidth: "md",
+    });
+  }, []);
+
+  console.log("lists", lists);
+  const filteredLists = useMemo(
+    () =>
+      lists.filter((list) =>
+        list.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [lists, searchQuery]
   );
 
   // Find the selected list from the filtered lists
   const selectedList = viewingListId
     ? filteredLists.find((list) => list.id === viewingListId) || null
     : null;
-
-  if (isLoading) {
-    return <PageSkeleton />;
-  }
 
   if (isError && error) {
     return (
@@ -57,6 +72,7 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
 
   return (
     <div>
+      {/* {isLoading && <PageSkeleton />} */}
       {filteredLists.length === 0 ? (
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
@@ -93,22 +109,23 @@ export function ListsPageClient({ initialLists }: ListsPageClientProps) {
 
       {/* Floating Add Button */}
       <FloatingActionButton
-        onClick={showAddListDialog}
+        onClick={handleAddList}
         icon={Plus}
         ariaLabel="Add list"
       />
 
       {/* List Details Drawer */}
       {selectedList && (
-      <ListDetailsDrawer
-        list={selectedList as ShoppingList}
-        open={!!viewingListId}
+        <ListDetailsDrawer
+          list={selectedList as ShoppingList}
+          open={!!viewingListId}
           onOpenChange={(open) => !open && setViewingListId(null)}
         />
       )}
 
       {/* Network Status */}
       <NetworkStatus />
+      {filteredLists.length > 0 && <RealtimeWrapper />}
     </div>
   );
 }

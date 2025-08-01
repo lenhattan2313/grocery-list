@@ -30,8 +30,7 @@ export async function getHousehold(userId: string) {
     });
 
     return household;
-  } catch (error) {
-    console.error("Failed to get household", error);
+  } catch {
     return null;
   }
 }
