@@ -3,6 +3,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { CreateListSchema } from "@/schema/list-schema";
 import { UpdateListItemsSchema } from "@/schema/item-schema";
 import { getPusherInstance } from "@/lib/pusher";
@@ -381,7 +382,7 @@ export async function updateListItems(
 
   const validatedItems = UpdateListItemsSchema.parse(items);
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.shoppingItem.deleteMany({
       where: { listId: listId },
     });
