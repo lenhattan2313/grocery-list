@@ -11,7 +11,6 @@ import { Plus } from "lucide-react";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
 // import { PageSkeleton } from "@/components/common/page-skeleton";
 import { useRealtimeLists } from "@/hooks/use-realtime-lists";
-import { ShoppingList } from "@/types";
 import { NetworkStatus } from "@/components/common/network-status";
 import { dialogService } from "@/stores/dialog-store";
 import { useState, useCallback, useMemo } from "react";
@@ -116,7 +115,7 @@ export function ListsPageClient({
       {/* List Details Drawer */}
       {selectedList && (
         <ListDetailsDrawer
-          list={selectedList as ShoppingList}
+          list={selectedList}
           open={!!viewingListId}
           onOpenChange={(open) => !open && setViewingListId(null)}
         />

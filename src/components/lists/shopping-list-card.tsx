@@ -5,12 +5,7 @@ import {
   useOfflineDeleteListMutation,
   useOfflineUpdateListNameMutation,
 } from "@/hooks/use-offline-lists";
-import type { ShoppingList, ShoppingItem } from "@/types";
-
-// Fallback type definition for Vercel deployment
-type ShoppingListWithItems = ShoppingList & {
-  items: ShoppingItem[];
-};
+import type { ShoppingListWithItems } from "@/types/list";
 import { MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
 import { ClientRelativeTime } from "@/components/common/client-relative-time";
 import { useSession } from "next-auth/react";

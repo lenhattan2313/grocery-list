@@ -35,7 +35,7 @@ export interface ShoppingList {
   createdAt: Date;
   updatedAt: Date;
   userId: string;
-  householdId?: string;
+  householdId: string | null;
   items: ShoppingItem[];
 }
 
