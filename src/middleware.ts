@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { auth } from "@/lib/auth"; // your next-auth auth helper
-import type { NextRequest } from "next/server";
+import { auth } from "@/lib/auth";
 
-export default auth((req: NextRequest) => {
+export default auth((req) => {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
 
   const isLoggedIn = !!req.auth;
+  console.log("isLoggedIn", isLoggedIn);
 
   // Public pages (no auth required)
   const publicPaths = ["/signin", "/signout", "/offline"];
@@ -31,6 +30,7 @@ export default auth((req: NextRequest) => {
   // Default: allow access
   return NextResponse.next();
 });
+
 export const config = {
   matcher: [
     /*
