@@ -10,6 +10,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   trustHost: true,
   debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET,
+  logger: {
+    error(code, ...message) {
+      console.error(`[NextAuth Error] ${code}:`, ...message);
+    },
+    warn(code, ...message) {
+      console.warn(`[NextAuth Warning] ${code}:`, ...message);
+    },
+    debug(code, ...message) {
+      if (process.env.NODE_ENV === "development") {
+        console.log(`[NextAuth Debug] ${code}:`, ...message);
+      }
+    },
+  },
   providers: [
     Credentials({
       name: "Demo Account",

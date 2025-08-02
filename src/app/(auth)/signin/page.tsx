@@ -24,7 +24,12 @@ export default function SignInPage() {
             <form
               action={async () => {
                 "use server";
-                await signIn("google", { redirectTo: "/" });
+                try {
+                  await signIn("google", { redirectTo: "/" });
+                } catch (error) {
+                  console.error("Sign in error:", error);
+                  throw error;
+                }
               }}
             >
               <Button
