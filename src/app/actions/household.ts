@@ -2,8 +2,9 @@
 
 import { prisma } from "@/lib/db";
 import { Role } from "@/constants/role";
+import { Household, HouseholdMember } from "@/types";
 
-export async function getHousehold(userId: string) {
+export async function getHousehold(userId: string): Promise<Household | null> {
   try {
     const household = await prisma.household.findFirst({
       where: {
@@ -35,7 +36,7 @@ export async function getHousehold(userId: string) {
   }
 }
 
-export async function createHousehold(userId: string) {
+export async function createHousehold(userId: string): Promise<Household> {
   const household = await prisma.household.create({
     data: {
       name: "My Household",
@@ -65,16 +66,18 @@ export async function createHousehold(userId: string) {
   return household;
 }
 
+interface MemberData {
+  email: string;
+  role: string;
+  dietaryRestrictions?: string;
+  allergies?: string;
+}
+
 export async function saveMember(
   householdId: string,
-  memberData: {
-    email: string;
-    role: string;
-    dietaryRestrictions?: string;
-    allergies?: string;
-  },
+  memberData: MemberData,
   memberId?: string
-) {
+): Promise<HouseholdMember> {
   const user = await prisma.user.findUnique({
     where: { email: memberData.email },
   });
@@ -102,8 +105,13 @@ export async function saveMember(
   return member;
 }
 
-export async function removeMember(memberId: string) {
-  await prisma.householdMember.delete({
-    where: { id: memberId },
-  });
+export async function removeMember(memberId: string): Promise<boolean> {
+  try {
+    await prisma.householdMember.delete({
+      where: { id: memberId },
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }

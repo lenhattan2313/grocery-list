@@ -2,10 +2,10 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { CreateRecipeForm, RecipeIngredient } from "@/types";
+import { CreateRecipeForm, RecipeIngredient, Recipe } from "@/types";
 import { revalidatePath } from "next/cache";
 
-export async function getRecipes() {
+export async function getRecipes(): Promise<Recipe[]> {
   const session = await auth();
   if (!session?.user?.id) return [];
 
@@ -35,7 +35,9 @@ export async function getRecipes() {
   return recipes;
 }
 
-export async function createRecipe(data: CreateRecipeForm) {
+export async function createRecipe(
+  data: CreateRecipeForm
+): Promise<Recipe | null> {
   const session = await auth();
   if (!session?.user?.id) return null;
 
@@ -57,7 +59,10 @@ export async function createRecipe(data: CreateRecipeForm) {
   return newRecipe;
 }
 
-export async function updateRecipe(id: string, data: CreateRecipeForm) {
+export async function updateRecipe(
+  id: string,
+  data: CreateRecipeForm
+): Promise<Recipe | null> {
   const session = await auth();
   if (!session?.user?.id) return null;
 
@@ -80,20 +85,35 @@ export async function updateRecipe(id: string, data: CreateRecipeForm) {
   return updatedRecipe;
 }
 
-export async function deleteRecipe(id: string) {
+export async function deleteRecipe(id: string): Promise<boolean> {
   const session = await auth();
-  if (!session?.user?.id) return null;
+  if (!session?.user?.id) return false;
 
-  await prisma.recipe.delete({
-    where: { id },
-  });
+  try {
+    await prisma.recipe.delete({
+      where: { id },
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function addRecipeToListAsync(
   recipeId: string,
   listId: string,
   selectedIngredientIds?: string[]
-) {
+): Promise<{
+  id: string;
+  name: string;
+  items: Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    unit: string;
+    isCompleted: boolean;
+  }>;
+}> {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
@@ -124,9 +144,9 @@ export async function addRecipeToListAsync(
     throw new Error("Recipe not found");
   }
 
-  const ingredientsToAdd = selectedIngredientIds
-    ? recipe.ingredients.filter((ing: RecipeIngredient) =>
-        selectedIngredientIds.includes(ing.id)
+  const ingredientsToAdd: RecipeIngredient[] = selectedIngredientIds
+    ? recipe.ingredients.filter((ingredient: RecipeIngredient): boolean =>
+        selectedIngredientIds.includes(ingredient.id)
       )
     : recipe.ingredients;
 
@@ -158,9 +178,9 @@ export async function addRecipeToListAsync(
     },
     data: {
       items: {
-        create: ingredientsToAdd.map((ingredient) => ({
+        create: ingredientsToAdd.map((ingredient: RecipeIngredient) => ({
           name: ingredient.name,
-          quantity: parseInt(ingredient.quantity) || 1,
+          quantity: Math.max(1, parseInt(ingredient.quantity) || 1),
           unit: ingredient.unit,
           isCompleted: false,
         })),
@@ -170,6 +190,7 @@ export async function addRecipeToListAsync(
       items: true,
     },
   });
+
   revalidatePath("/");
   return updatedList;
 }
