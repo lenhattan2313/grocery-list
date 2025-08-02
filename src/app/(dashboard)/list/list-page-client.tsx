@@ -48,7 +48,6 @@ export function ListsPageClient({
     });
   }, []);
 
-  console.log("lists", lists);
   const filteredLists = useMemo(
     () =>
       lists.filter((list) =>
