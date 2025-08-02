@@ -2,7 +2,7 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { CreateRecipeForm } from "@/types";
+import { CreateRecipeForm, RecipeIngredient } from "@/types";
 import { revalidatePath } from "next/cache";
 
 export async function getRecipes() {
@@ -125,7 +125,9 @@ export async function addRecipeToListAsync(
   }
 
   const ingredientsToAdd = selectedIngredientIds
-    ? recipe.ingredients.filter((ing) => selectedIngredientIds.includes(ing.id))
+    ? recipe.ingredients.filter((ing: RecipeIngredient) =>
+        selectedIngredientIds.includes(ing.id)
+      )
     : recipe.ingredients;
 
   const list = await prisma.shoppingList.findFirst({
