@@ -2,10 +2,10 @@
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { CreateRecipeForm, RecipeIngredient, Recipe } from "@/types";
+import { CreateRecipeForm, RecipeIngredient } from "@/types";
 import { revalidatePath } from "next/cache";
 
-export async function getRecipes(): Promise<Recipe[]> {
+export async function getRecipes() {
   const session = await auth();
   if (!session?.user?.id) return [];
 
@@ -35,9 +35,7 @@ export async function getRecipes(): Promise<Recipe[]> {
   return recipes;
 }
 
-export async function createRecipe(
-  data: CreateRecipeForm
-): Promise<Recipe | null> {
+export async function createRecipe(data: CreateRecipeForm) {
   const session = await auth();
   if (!session?.user?.id) return null;
 
@@ -59,10 +57,7 @@ export async function createRecipe(
   return newRecipe;
 }
 
-export async function updateRecipe(
-  id: string,
-  data: CreateRecipeForm
-): Promise<Recipe | null> {
+export async function updateRecipe(id: string, data: CreateRecipeForm) {
   const session = await auth();
   if (!session?.user?.id) return null;
 

@@ -2,9 +2,8 @@
 
 import { prisma } from "@/lib/db";
 import { Role } from "@/constants/role";
-import { Household, HouseholdMember } from "@/types";
 
-export async function getHousehold(userId: string): Promise<Household | null> {
+export async function getHousehold(userId: string) {
   try {
     const household = await prisma.household.findFirst({
       where: {
@@ -36,7 +35,7 @@ export async function getHousehold(userId: string): Promise<Household | null> {
   }
 }
 
-export async function createHousehold(userId: string): Promise<Household> {
+export async function createHousehold(userId: string) {
   const household = await prisma.household.create({
     data: {
       name: "My Household",
@@ -77,7 +76,7 @@ export async function saveMember(
   householdId: string,
   memberData: MemberData,
   memberId?: string
-): Promise<HouseholdMember> {
+) {
   const user = await prisma.user.findUnique({
     where: { email: memberData.email },
   });
@@ -105,7 +104,7 @@ export async function saveMember(
   return member;
 }
 
-export async function removeMember(memberId: string): Promise<boolean> {
+export async function removeMember(memberId: string) {
   try {
     await prisma.householdMember.delete({
       where: { id: memberId },

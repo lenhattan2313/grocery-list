@@ -41,7 +41,7 @@ interface RemoveMemberVariables {
 }
 
 export function useRemoveMemberMutation() {
-  return useMutation<void, Error, RemoveMemberVariables>({
+  return useMutation<boolean, Error, RemoveMemberVariables>({
     mutationFn: async ({ memberId }) => {
       return removeMember(memberId);
     },
