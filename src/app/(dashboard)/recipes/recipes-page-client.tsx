@@ -6,7 +6,7 @@ import { RecipeCard } from "@/components/recipes/recipe-card";
 import { RecipeFormDrawer } from "@/components/dynamic-imports";
 import { RecipeViewDrawer } from "@/components/dynamic-imports";
 import { showRecipeToListDialog } from "@/components/recipes/recipe-to-list-dialog";
-import { CreateRecipeForm } from "@/types";
+import { CreateRecipeForm, RecipeIngredient } from "@/types";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
 import { PageHeader } from "@/components/common/page-header";
 import { dialogService } from "@/stores/dialog-store";
@@ -83,7 +83,7 @@ export default function RecipesPageClient({
   const handleAddToList = async (recipe: RecipeWithIngredients) => {
     showRecipeToListDialog(
       recipe,
-      recipe.ingredients.map((ing) => ing.id)
+      recipe.ingredients.map((ing: RecipeIngredient) => ing.id)
     );
   };
 
