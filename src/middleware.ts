@@ -4,43 +4,39 @@ import { auth } from "@/lib/auth";
 export default auth((req) => {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
-
   const isLoggedIn = !!req.auth;
+
   console.log("isLoggedIn", isLoggedIn);
 
-  // Public pages (no auth required)
+  // Public routes (do not require auth)
   const publicPaths = ["/signin", "/signout", "/offline"];
   const isPublic = publicPaths.includes(pathname);
 
   if (isPublic) {
-    // If already signed in and accessing signin/signout, redirect to home
+    // If already signed in and accessing auth page, redirect to home
     if (isLoggedIn && (pathname === "/signin" || pathname === "/signout")) {
-      return NextResponse.redirect(nextUrl.origin);
+      const homeUrl = new URL("/", nextUrl.origin);
+      return NextResponse.redirect(homeUrl);
     }
     return NextResponse.next();
   }
 
-  // Protected pages (requires login)
+  // Protected routes (require login)
   if (!isLoggedIn) {
-    const signInUrl = `${
-      nextUrl.origin
-    }/signin?callbackUrl=${encodeURIComponent(pathname)}`;
+    const signInUrl = new URL("/signin", nextUrl.origin);
+    signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
   }
 
-  // Default: allow access
   return NextResponse.next();
 });
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     */
+    // Match all paths except:
+    // - API routes
+    // - _next static/image assets
+    // - metadata files
     "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
   ],
 };
