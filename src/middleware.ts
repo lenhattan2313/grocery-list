@@ -15,15 +15,14 @@ export default auth((req) => {
   if (isPublic) {
     // If already signed in and accessing signin/signout, redirect to home
     if (isLoggedIn && (pathname === "/signin" || pathname === "/signout")) {
-      return NextResponse.redirect(new URL("/", nextUrl));
+      return NextResponse.redirect("/");
     }
     return NextResponse.next();
   }
 
   // Protected pages (requires login)
   if (!isLoggedIn) {
-    const signInUrl = new URL("/signin", req.url);
-    signInUrl.searchParams.set("callbackUrl", pathname);
+    const signInUrl = `/signin?callbackUrl=${encodeURIComponent(pathname)}`;
     return NextResponse.redirect(signInUrl);
   }
 
