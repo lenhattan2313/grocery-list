@@ -5,7 +5,12 @@ import {
   useOfflineDeleteListMutation,
   useOfflineUpdateListNameMutation,
 } from "@/hooks/use-offline-lists";
-import type { ShoppingList, ShoppingItem } from "@prisma/client";
+import type { ShoppingList, ShoppingItem } from "@/types";
+
+// Fallback type definition for Vercel deployment
+type ShoppingListWithItems = ShoppingList & {
+  items: ShoppingItem[];
+};
 import { MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
 import { ClientRelativeTime } from "@/components/common/client-relative-time";
 import { useSession } from "next-auth/react";
@@ -33,10 +38,6 @@ import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { ShareListDialog } from "./share-list-dialog";
 import { useDialog } from "@/components/common/dialog-service";
 import { getSequentialIcon, iconMap } from "@/lib/utils";
-
-type ShoppingListWithItems = ShoppingList & {
-  items: ShoppingItem[];
-};
 
 interface ShoppingListCardProps {
   list: ShoppingListWithItems;
