@@ -27,6 +27,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: config.google.clientId,
       clientSecret: config.google.clientSecret,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
   ],
   session: { strategy: "jwt" },
@@ -48,4 +55,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
+  // Add explicit base URL configuration
+  basePath: "/api/auth",
 });
