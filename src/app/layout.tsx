@@ -47,7 +47,6 @@ export const metadata: Metadata = {
   creator: "Grocery App",
   publisher: "Grocery App",
   formatDetection: { email: false, address: false, telephone: false },
-  metadataBase: new URL("http://localhost:3000"),
   alternates: { canonical: "/" },
   icons: {
     icon: [
