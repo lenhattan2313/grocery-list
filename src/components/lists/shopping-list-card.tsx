@@ -5,7 +5,7 @@ import {
   useOfflineDeleteListMutation,
   useOfflineUpdateListNameMutation,
 } from "@/hooks/use-offline-lists";
-import { Prisma } from "@prisma/client";
+import type { ShoppingList, ShoppingItem } from "@prisma/client";
 import { MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
 import { ClientRelativeTime } from "@/components/common/client-relative-time";
 import { useSession } from "next-auth/react";
@@ -34,9 +34,9 @@ import { ShareListDialog } from "./share-list-dialog";
 import { useDialog } from "@/components/common/dialog-service";
 import { getSequentialIcon, iconMap } from "@/lib/utils";
 
-type ShoppingListWithItems = Prisma.ShoppingListGetPayload<{
-  include: { items: true };
-}>;
+type ShoppingListWithItems = ShoppingList & {
+  items: ShoppingItem[];
+};
 
 interface ShoppingListCardProps {
   list: ShoppingListWithItems;
