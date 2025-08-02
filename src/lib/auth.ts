@@ -1,6 +1,5 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 
 import { config } from "@/config";
@@ -25,22 +24,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   providers: [
-    Credentials({
-      name: "Demo Account",
-      credentials: {},
-      async authorize() {
-        const demoUser = await prisma.user.upsert({
-          where: { email: "demo@example.com" },
-          update: {},
-          create: {
-            email: "demo@example.com",
-            name: "Demo User",
-          },
-        });
-
-        return demoUser;
-      },
-    }),
     Google({
       clientId: config.google.clientId,
       clientSecret: config.google.clientSecret,
