@@ -59,6 +59,14 @@ export function useOfflineListsQuery(initialData?: ShoppingListWithItems[]) {
       if (!session?.user?.id) {
         return [];
       }
+      // First, sync data from server to IndexedDB on app startup
+      // if (isOnline) {
+      //   try {
+      //     await offlineSyncService.syncDataFromServer(session.user.id);
+      //   } catch (error) {
+      //     console.error("Failed to sync data from server on startup:", error);
+      //   }
+      // }
 
       // Use the same getLists function as server-side prefetch
       const result = await getLists();
@@ -313,5 +321,153 @@ export function useSyncStatus() {
     isSyncing,
     pendingChanges: syncQueue.length,
     refreshSyncStatus,
+  };
+}
+
+// Manual sync hook for forcing server sync
+export function useManualSync() {
+  const { data: session } = useSession();
+  const { isOnline } = useNetworkStatus();
+  const queryClient = useQueryClient();
+
+  const syncFromServer = useCallback(async () => {
+    if (!session?.user?.id) {
+      throw new Error("Not authenticated");
+    }
+
+    if (!isOnline) {
+      throw new Error("Cannot sync while offline");
+    }
+
+    try {
+      await offlineSyncService.forceSyncFromServer(session.user.id);
+      // Invalidate and refetch lists after successful sync
+      await queryClient.invalidateQueries({ queryKey: ["lists"] });
+    } catch (error) {
+      console.error("Manual sync failed:", error);
+      throw error;
+    }
+  }, [session?.user?.id, isOnline, queryClient]);
+
+  return {
+    syncFromServer,
+    canSync: isOnline && !!session?.user?.id,
+  };
+}
+
+/**
+ * Hook to check if IndexedDB is empty and trigger manual sync
+ *
+ * This hook automatically checks if IndexedDB has any data when the user is online.
+ * If IndexedDB is empty, it triggers a manual sync from the server to populate
+ * the local database for offline access.
+ *
+ * @returns {Object} Object containing sync state and status
+ * @returns {boolean} returns.isChecking - Whether a sync check is currently in progress
+ * @returns {boolean} returns.hasSynced - Whether the initial sync has been completed
+ * @returns {Object} returns.syncStatus - Detailed sync status information
+ * @returns {boolean} returns.syncStatus.isEmpty - Whether IndexedDB was empty when checked
+ * @returns {number} returns.syncStatus.itemCount - Number of items in IndexedDB
+ * @returns {Date|null} returns.syncStatus.lastChecked - When the last check occurred
+ * @returns {string|null} returns.syncStatus.error - Any error that occurred during sync
+ *
+ * @example
+ * ```tsx
+ * function MyComponent() {
+ *   const { isChecking, hasSynced, syncStatus } = useIndexedDBSync();
+ *
+ *   if (isChecking) {
+ *     return <div>Checking local data...</div>;
+ *   }
+ *
+ *   if (syncStatus.error) {
+ *     return <div>Sync error: {syncStatus.error}</div>;
+ *   }
+ *
+ *   return <div>Local data: {syncStatus.itemCount} items</div>;
+ * }
+ * ```
+ */
+export function useIndexedDBSync() {
+  const { data: session } = useSession();
+  const { isOnline } = useNetworkStatus();
+  const { syncFromServer } = useManualSync();
+  const [isChecking, setIsChecking] = useState(false);
+  const [hasSynced, setHasSynced] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<{
+    isEmpty: boolean;
+    itemCount: number;
+    lastChecked: Date | null;
+    error: string | null;
+  }>({
+    isEmpty: false,
+    itemCount: 0,
+    lastChecked: null,
+    error: null,
+  });
+
+  useEffect(() => {
+    const checkAndSyncIfEmpty = async () => {
+      // Only run once per session and when online
+      if (!session?.user?.id || !isOnline || hasSynced || isChecking) {
+        return;
+      }
+
+      setIsChecking(true);
+      setSyncStatus((prev) => ({ ...prev, error: null }));
+
+      try {
+        // Check if IndexedDB has any lists
+        const dbSize = await offlineSyncService.getDatabaseSize();
+
+        setSyncStatus({
+          isEmpty: dbSize === 0,
+          itemCount: dbSize,
+          lastChecked: new Date(),
+          error: null,
+        });
+
+        if (dbSize === 0) {
+          console.log("IndexedDB is empty, triggering manual sync...");
+          await syncFromServer();
+          setHasSynced(true);
+          console.log("Manual sync completed successfully");
+        } else {
+          console.log(`IndexedDB has ${dbSize} items, no sync needed`);
+          setHasSynced(true);
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        console.error("Failed to check/sync IndexedDB:", error);
+        setSyncStatus((prev) => ({
+          ...prev,
+          error: errorMessage,
+          lastChecked: new Date(),
+        }));
+        // Don't set hasSynced to true so we can retry later
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkAndSyncIfEmpty();
+  }, [session?.user?.id, isOnline, hasSynced, isChecking, syncFromServer]);
+
+  // Reset sync state when user changes
+  useEffect(() => {
+    setHasSynced(false);
+    setSyncStatus({
+      isEmpty: false,
+      itemCount: 0,
+      lastChecked: null,
+      error: null,
+    });
+  }, [session?.user?.id]);
+
+  return {
+    isChecking,
+    hasSynced,
+    syncStatus,
   };
 }

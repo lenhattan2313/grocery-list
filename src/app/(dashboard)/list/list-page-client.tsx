@@ -1,7 +1,10 @@
 "use client";
 
 import { useSearchParamState } from "@/hooks/use-search-params";
-import { useOfflineListsQuery } from "@/hooks/use-offline-lists";
+import {
+  useIndexedDBSync,
+  useOfflineListsQuery,
+} from "@/hooks/use-offline-lists";
 import {
   AddListDialog,
   ListDetailsDrawer,
@@ -12,6 +15,7 @@ import { FloatingActionButton } from "@/components/common/floating-action-button
 // import { PageSkeleton } from "@/components/common/page-skeleton";
 import { useRealtimeLists } from "@/hooks/use-realtime-lists";
 import { NetworkStatus } from "@/components/common/network-status";
+
 import { dialogService } from "@/stores/dialog-store";
 import { useState, useCallback, useMemo } from "react";
 import { ShoppingListWithItems } from "@/types/list";
@@ -29,6 +33,8 @@ export function ListsPageClient({
   } = useOfflineListsQuery();
   const [searchQuery] = useSearchParamState("q", "");
   const [viewingListId, setViewingListId] = useState<string | null>(null);
+
+  useIndexedDBSync();
 
   const RealtimeWrapper = () => {
     useRealtimeLists();

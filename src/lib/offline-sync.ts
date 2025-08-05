@@ -75,6 +75,47 @@ class OfflineSyncService {
     this.initialized = true;
   }
 
+  // New method to sync data from database to IndexedDB on app startup
+  public async syncDataFromServer(userId: string): Promise<void> {
+    await this.ensureInitialized();
+
+    if (!this.isOnline) {
+      console.log("Offline - skipping server sync");
+      return;
+    }
+
+    try {
+      console.log("Syncing data from server to IndexedDB...");
+      const serverLists = await getLists();
+      await indexedDBService.saveLists(serverLists);
+      await this.updateUserData(userId, true);
+      console.log(
+        `Synced ${serverLists.length} lists from server to IndexedDB`
+      );
+    } catch (error) {
+      console.error("Failed to sync data from server:", error);
+      // Don't throw - fall back to IndexedDB data
+    }
+  }
+
+  // Public method to force sync data from server (useful for manual refresh)
+  public async forceSyncFromServer(userId: string): Promise<void> {
+    await this.ensureInitialized();
+
+    try {
+      console.log("Force syncing data from server to IndexedDB...");
+      const serverLists = await getLists();
+      await indexedDBService.saveLists(serverLists);
+      await this.updateUserData(userId, true);
+      console.log(
+        `Force synced ${serverLists.length} lists from server to IndexedDB`
+      );
+    } catch (error) {
+      console.error("Failed to force sync data from server:", error);
+      throw error; // Re-throw for manual sync scenarios
+    }
+  }
+
   private handleOnline(): void {
     this.isOnline = true;
     this.notifyListeners();
@@ -307,6 +348,7 @@ class OfflineSyncService {
     await indexedDBService.saveList(updatedList);
 
     const isTemp = this.isTempId(listId);
+    console.log(`Updating list name:`, listId, name, isTemp);
     await this.addToSyncQueueOptimized("UPDATE_LIST", {
       listId,
       name,
@@ -468,6 +510,7 @@ class OfflineSyncService {
   }
 
   private async processUpdateList(data: UpdateListData): Promise<void> {
+    console.log(`Processing update list:`, data);
     const listId = data.tempId
       ? this.getRealId(data.tempId) || data.listId
       : data.listId;

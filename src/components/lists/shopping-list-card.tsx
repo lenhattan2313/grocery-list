@@ -219,16 +219,17 @@ const ShoppingListCardComponent = ({
             <span className="text-sm text-muted-foreground">
               {completedItemsCount} / {totalItems} completed
             </span>
-            {completedItemsCount === totalItems ? (
-              <Badge
-                variant="secondary"
-                className="bg-green-100 text-green-800 border-green-200"
-              >
-                Completed
-              </Badge>
-            ) : (
-              <Badge variant="outline">In Progress</Badge>
-            )}
+            {totalItems > 0 &&
+              (completedItemsCount === totalItems ? (
+                <Badge
+                  variant="secondary"
+                  className="bg-green-100 text-green-800 border-green-200"
+                >
+                  Completed
+                </Badge>
+              ) : (
+                <Badge variant="outline">In Progress</Badge>
+              ))}
           </div>
           <Progress value={progress} className="mt-2" aria-label="Progress" />
         </CardContent>

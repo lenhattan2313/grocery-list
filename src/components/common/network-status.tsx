@@ -1,23 +1,53 @@
 "use client";
 
-import { useNetworkStatus, useSyncStatus } from "@/hooks/use-offline-lists";
+import {
+  useNetworkStatus,
+  useSyncStatus,
+  useIndexedDBSync,
+} from "@/hooks/use-offline-lists";
 import { useHydration } from "@/hooks/use-hydration";
-import { Wifi, WifiOff, RefreshCw } from "lucide-react";
+import {
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  Database,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+/**
+ * Network Status Component
+ *
+ * Displays network connectivity status and sync information.
+ * Shows:
+ * - Online/Offline status
+ * - Pending sync changes count
+ * - IndexedDB sync status (only on list page)
+ *
+ * This component automatically checks if IndexedDB is empty and shows
+ * sync progress when data is being fetched from the server.
+ */
 export function NetworkStatus() {
   const hydrated = useHydration();
   const { isOnline } = useNetworkStatus();
   const { pendingChanges, isSyncing } = useSyncStatus();
+  const { isChecking, hasSynced, syncStatus } = useIndexedDBSync();
 
   // Don't render anything until hydrated to prevent hydration mismatch
   if (!hydrated) {
     return null;
   }
 
-  if (isOnline && pendingChanges === 0) {
-    return null; // Don't show anything when online and synced
+  // Show status if offline, has pending changes, or has sync status to display
+  const shouldShow =
+    !isOnline ||
+    pendingChanges > 0 ||
+    (syncStatus.lastChecked && (isChecking || syncStatus.error || !hasSynced));
+
+  if (!shouldShow) {
+    return null;
   }
 
   return (
@@ -53,6 +83,36 @@ export function NetworkStatus() {
                 </Badge>
               </>
             )}
+          </>
+        )}
+
+        {/* IndexedDB Sync Status */}
+        {syncStatus.lastChecked && (
+          <>
+            <div className="w-px h-4 bg-gray-300" />
+            <div className="flex items-center gap-1">
+              {isChecking ? (
+                <>
+                  <Database className="h-3 w-3 text-blue-600" />
+                  <RefreshCw className="h-3 w-3 text-blue-600 animate-spin" />
+                  <span className="text-xs text-blue-700">Checking...</span>
+                </>
+              ) : syncStatus.error ? (
+                <>
+                  <AlertCircle className="h-3 w-3 text-red-600" />
+                  <span className="text-xs text-red-700">Sync Error</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  <span className="text-xs text-green-700">
+                    {syncStatus.isEmpty
+                      ? "Synced"
+                      : `${syncStatus.itemCount} local`}
+                  </span>
+                </>
+              )}
+            </div>
           </>
         )}
       </div>

@@ -6,8 +6,6 @@ export default auth((req) => {
   const pathname = nextUrl.pathname;
   const isLoggedIn = !!req.auth;
 
-  console.log("isLoggedIn", isLoggedIn);
-
   // Public routes (do not require auth)
   const publicPaths = ["/signin", "/signout", "/offline"];
   const isPublic = publicPaths.includes(pathname);
