@@ -103,7 +103,7 @@ export function ProfileDetails() {
 
       <Button
         variant="outline"
-        className="text-destructive border-red-500 w-full mb-4"
+        className="text-destructive border-destructive w-full mb-4 dark:text-destructive dark:border-destructive"
         onClick={() => signOut({ callbackUrl: "/signin" })}
       >
         Log Out
