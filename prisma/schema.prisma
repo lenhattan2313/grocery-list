@@ -68,11 +68,10 @@ model User {
 
   // Relations
   accounts   Account[]
+  sessions   Session[]
   households HouseholdMember[]
   lists      ShoppingList[] // Lists created by the user
   recipes    Recipe[]
-  sessions   Session[]
-
 
   @@map("users")
 }

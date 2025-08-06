@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   trustHost: true,
-  debug: process.env.NODE_ENV === "development",
+  debug: true, // Enable debug in production temporarily
   secret: process.env.NEXTAUTH_SECRET,
   logger: {
     error(code, ...message) {
