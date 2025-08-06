@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, Edit, Trash2, Loader2, Save, X } from "lucide-react";
+import { Check, Edit, Trash2, Save, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ShoppingItem } from "@/types";
 import { UNIT_OPTIONS } from "@/constants/unit";
@@ -27,7 +27,6 @@ interface ShoppingListItemProps {
   onSaveEdit: (data: z.infer<typeof CreateItemSchema>) => void;
   onCancelEdit: () => void;
   isEditing: boolean;
-  isSubmittingEdit: boolean;
   isOwner: boolean;
 }
 
@@ -39,7 +38,6 @@ export function ShoppingListItem({
   onSaveEdit,
   onCancelEdit,
   isEditing,
-  isSubmittingEdit,
   isOwner,
 }: ShoppingListItemProps) {
   const {
@@ -58,35 +56,31 @@ export function ShoppingListItem({
   return (
     <div
       className={cn(
-        "rounded-lg border bg-white transition-all",
+        "rounded-lg border bg-white transition-all dark:border-gray-600 dark:bg-transparent",
         item.isCompleted && !isEditing && "bg-gray-50 opacity-75"
       )}
     >
       {isEditing ? (
         <form onSubmit={handleSubmitEdit(onSaveEdit)} className="p-3 space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Edit Item</Label>
+            <Label className="text-sm font-medium text-gray-800 dark:text-gray-100">
+              Edit Item
+            </Label>
             <div className="flex gap-1">
               <Button
                 type="submit"
                 size="sm"
-                disabled={isSubmittingEdit}
                 className="h-8 w-8 p-0"
                 aria-label="Save Edit"
               >
-                {isSubmittingEdit ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
+                <Save className="h-4 w-4" />
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={onCancelEdit}
-                disabled={isSubmittingEdit}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 text-gray-800 dark:text-gray-100"
                 aria-label="Cancel Edit"
               >
                 <X className="h-4 w-4" />
@@ -98,11 +92,10 @@ export function ShoppingListItem({
               <Input
                 placeholder="Item name"
                 {...registerEdit("name")}
-                disabled={isSubmittingEdit}
                 className="h-8"
               />
               {errorsEdit.name && (
-                <p className="text-xs text-red-500 mt-1">
+                <p className="text-xs text-destructive mt-1">
                   {errorsEdit.name.message}
                 </p>
               )}
@@ -113,11 +106,10 @@ export function ShoppingListItem({
                 min="1"
                 placeholder="Qty"
                 {...registerEdit("quantity")}
-                disabled={isSubmittingEdit}
                 className="h-8"
               />
               {errorsEdit.quantity && (
-                <p className="text-xs text-red-500 mt-1">
+                <p className="text-xs text-destructive mt-1">
                   {errorsEdit.quantity.message}
                 </p>
               )}
@@ -127,11 +119,7 @@ export function ShoppingListItem({
                 name="unit"
                 control={controlEdit}
                 render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={isSubmittingEdit}
-                  >
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger className="h-8">
                       <SelectValue placeholder="Unit" />
                     </SelectTrigger>
@@ -168,12 +156,12 @@ export function ShoppingListItem({
           <div className="flex-1 min-w-0">
             <div
               className={cn(
-                "flex items-center gap-4 transition-all",
+                "flex items-center gap-4 transition-all text-gray-800 dark:text-gray-100",
                 item.isCompleted && "text-gray-500 custom-strikethrough"
               )}
             >
               <div className="font-medium">{item.name}</div>
-              <span className="text-sm text-gray-500 flex-shrink-0">
+              <span className="text-sm text-gray-500 flex-shrink-0 dark:text-gray-100">
                 {item.quantity} {item.unit}
               </span>
             </div>
@@ -187,7 +175,7 @@ export function ShoppingListItem({
                   e.stopPropagation();
                   onEditItem(item);
                 }}
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0 text-gray-800 dark:text-gray-100"
                 aria-label="Edit Item"
               >
                 <Edit className="h-4 w-4" />
@@ -200,7 +188,7 @@ export function ShoppingListItem({
                   e.stopPropagation();
                   onDeleteItem(item.id);
                 }}
-                className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive/80"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

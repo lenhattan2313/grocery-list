@@ -169,7 +169,7 @@ export function ImageCropWorkflow({
         </button>
       )}
 
-      <DialogFooter>
+      <DialogFooter className="flex gap-2 flex-row justify-end text-gray-800 dark:text-gray-100">
         <Button variant="outline" onClick={handleCancel}>
           Cancel
         </Button>

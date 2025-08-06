@@ -11,8 +11,12 @@ async function UserHeader() {
 
   return (
     <div className="flex flex-col justify-center">
-      <p className="text-sm font-medium text-gray-500 mb-1">{greeting},</p>
-      <p className="text-xl font-semibold text-gray-900">{userName}</p>
+      <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+        {greeting},
+      </p>
+      <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+        {userName}
+      </p>
     </div>
   );
 }
@@ -23,16 +27,16 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-background">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white dark:bg-background shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Suspense
               fallback={
                 <div className="flex flex-col justify-center">
-                  <div className="h-4 w-20 bg-gray-200 rounded animate-pulse mb-1"></div>
-                  <div className="h-6 w-24 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-1"></div>
+                  <div className="h-6 w-24 bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div>
                 </div>
               }
             >

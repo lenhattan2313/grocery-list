@@ -49,7 +49,7 @@ export function FamilyMemberCard({
           )}
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-gray-900">
+              <h3 className="font-medium text-gray-900 dark:text-gray-100">
                 {member.user.name || member.user.email}
               </h3>
               {isCurrentUser && (

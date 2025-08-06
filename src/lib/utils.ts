@@ -38,7 +38,7 @@ export function getProgressColors(percentage: number) {
   } else {
     return {
       textColor: "text-gray-600",
-      progressColor: "bg-gray-500",
+      progressColor: "bg-gray-300 dark:bg-gray-600",
     };
   }
 }
@@ -60,7 +60,7 @@ export function getSequentialIcon(index: number) {
     { icon: "Store", color: "text-purple-600" },
     { icon: "Tag", color: "text-pink-600" },
     { icon: "Gift", color: "text-red-600" },
-    { icon: "Heart", color: "text-red-500" },
+    { icon: "Heart", color: "text-destructive" },
     { icon: "Star", color: "text-yellow-500" },
     { icon: "Zap", color: "text-yellow-400" },
     { icon: "Coffee", color: "text-amber-700" },

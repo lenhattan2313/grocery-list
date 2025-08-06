@@ -36,10 +36,7 @@ export function ListDetailsDrawer({
 
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
-  const {
-    formState: { isSubmitting },
-    reset,
-  } = useForm({
+  const { reset } = useForm({
     resolver: zodResolver(CreateItemSchema),
   });
 
@@ -181,11 +178,7 @@ export function ListDetailsDrawer({
         <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-24">
           {isOwner && (
             <>
-              <AddItemForm
-                onAddItem={handleAddItem}
-                isAdding={isSubmitting}
-                listId={list.id}
-              />
+              <AddItemForm onAddItem={handleAddItem} listId={list.id} />
               <SmartSuggestions
                 onAddItem={handleAddItemFromSuggestion}
                 existingItems={existingItems}
@@ -196,7 +189,6 @@ export function ListDetailsDrawer({
           <ShoppingList
             items={items}
             editingItemId={editingItemId}
-            isSubmittingEdit={isSubmitting}
             onToggleItem={handleToggleItem}
             onDeleteItem={handleDeleteItem}
             onEditItem={handleEditItem}
@@ -205,24 +197,23 @@ export function ListDetailsDrawer({
             isOwner={isOwner}
           />
         </div>
-        {hasChanges && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t">
-            <Button
-              className="w-full"
-              size="lg"
-              onClick={handleSaveChanges}
-              disabled={updateListItemsMutation.isPending}
-              aria-label="Save Changes"
-            >
-              {updateListItemsMutation.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Save Changes
-            </Button>
-          </div>
-        )}
+
+        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t dark:bg-transparent">
+          <Button
+            className="w-full"
+            size="lg"
+            onClick={handleSaveChanges}
+            disabled={updateListItemsMutation.isPending}
+            aria-label="Save Changes"
+          >
+            {updateListItemsMutation.isPending ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            Save Changes
+          </Button>
+        </div>
       </DrawerContent>
     </Drawer>
   );

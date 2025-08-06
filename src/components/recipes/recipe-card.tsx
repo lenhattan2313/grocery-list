@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
-import { ChefHat } from "lucide-react";
+import { ChefHat, Plus } from "lucide-react";
 import Image from "next/image";
 
 interface RecipeCardProps {
@@ -61,11 +61,12 @@ export function RecipeCard({
       <CardFooter className="flex gap-2">
         {onAddToList && (
           <Button
-            variant="default"
+            variant="third"
             className="flex-1"
             onClick={() => onAddToList(recipe)}
             aria-label="Add to List"
           >
+            <Plus className="h-4 w-4" />
             Add to List
           </Button>
         )}

@@ -1,6 +1,7 @@
 import { DialogService } from "@/components/common/dialog-service";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/providers/session-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PerformanceMonitor } from "@/components/common/performance-monitor";
 // import { STATIC_CRITICAL_CSS } from "@/components/common/critical-css";
 import type { Metadata, Viewport } from "next";
@@ -122,18 +123,20 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-hidden`}
       >
-        <AuthProvider>
-          <QueryProvider>
-            {children}
-            <DialogService />
-            <PerformanceMonitor />
-          </QueryProvider>
-          <Toaster position="top-center" />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <QueryProvider>
+              {children}
+              <DialogService />
+              <PerformanceMonitor />
+            </QueryProvider>
+            <Toaster position="top-center" />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -19,7 +19,7 @@ export function NotificationBell() {
           className="relative"
           aria-label="Open notifications"
         >
-          <Bell className="h-6 w-6" />
+          <Bell className="h-6 w-6 text-gray-800 dark:text-gray-100" />
           {/* Notification dot indicator */}
           <span className="absolute top-[8px] right-[10px] h-1 w-1 rounded-full bg-red-500" />
         </Button>

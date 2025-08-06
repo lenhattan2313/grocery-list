@@ -13,17 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { UNIT_OPTIONS } from "@/constants/unit";
 import { CreateItemSchema } from "@/schema/item-schema";
 
 interface AddItemFormProps {
   onAddItem: (data: z.infer<typeof CreateItemSchema>) => void;
-  isAdding: boolean;
   listId: string;
 }
 
-export function AddItemForm({ onAddItem, isAdding }: AddItemFormProps) {
+export function AddItemForm({ onAddItem }: AddItemFormProps) {
   const {
     register,
     handleSubmit,
@@ -47,31 +46,30 @@ export function AddItemForm({ onAddItem, isAdding }: AddItemFormProps) {
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="border rounded-lg p-4 bg-gray-50"
+      className="border rounded-lg p-4 dark:border-gray-600"
     >
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label>Add New Item</Label>
+          <Label className="text-gray-800 dark:text-gray-100">
+            Add New Item
+          </Label>
           <Button
             type="submit"
-            disabled={isAdding}
             className="shrink-0"
             size="sm"
             aria-label="Add Item"
           >
-            {isAdding ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
+            <Plus className="h-4 w-4" />
+            Add
           </Button>
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
-            <Input
-              placeholder="Item name"
-              {...register("name")}
-              disabled={isAdding}
-              className="bg-white"
-            />
+            <Input placeholder="Item name" {...register("name")} />
             {errors.name && (
-              <p className="text-xs text-red-500 mt-1">{errors.name.message}</p>
+              <p className="text-xs text-destructive mt-1">
+                {errors.name.message}
+              </p>
             )}
           </div>
           <div className="w-16">
@@ -80,16 +78,14 @@ export function AddItemForm({ onAddItem, isAdding }: AddItemFormProps) {
               min="1"
               placeholder="Qty"
               {...register("quantity")}
-              disabled={isAdding}
-              className="bg-white"
             />
             {errors.quantity && (
-              <p className="text-xs text-red-500 mt-1">
+              <p className="text-xs text-destructive mt-1">
                 {errors.quantity.message}
               </p>
             )}
           </div>
-          <div className="w-20">
+          <div>
             <Controller
               name="unit"
               control={control}
@@ -97,9 +93,8 @@ export function AddItemForm({ onAddItem, isAdding }: AddItemFormProps) {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
-                  disabled={isAdding}
                 >
-                  <SelectTrigger className="bg-white">
+                  <SelectTrigger>
                     <SelectValue placeholder="Unit" />
                   </SelectTrigger>
                   <SelectContent>

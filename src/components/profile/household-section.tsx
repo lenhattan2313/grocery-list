@@ -80,10 +80,10 @@ export function HouseholdSection({
     <Card className="p-6 gap-0">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             {household.name}
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             {household.members?.length} member
             {household.members?.length !== 1 ? "s" : ""}
           </p>

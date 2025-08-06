@@ -9,7 +9,6 @@ import { CreateItemSchema } from "@/schema/item-schema";
 interface ShoppingListProps {
   items: ShoppingItemType[];
   editingItemId: string | null;
-  isSubmittingEdit: boolean;
   onToggleItem: (itemId: string) => void;
   onDeleteItem: (itemId: string) => void;
   onEditItem: (item: ShoppingItemType) => void;
@@ -21,7 +20,6 @@ interface ShoppingListProps {
 export function ShoppingList({
   items,
   editingItemId,
-  isSubmittingEdit,
   onToggleItem,
   onDeleteItem,
   onEditItem,
@@ -46,7 +44,6 @@ export function ShoppingList({
           key={item.id}
           item={item}
           isEditing={editingItemId === item.id}
-          isSubmittingEdit={isSubmittingEdit}
           onToggleItem={onToggleItem}
           onDeleteItem={onDeleteItem}
           onEditItem={onEditItem}

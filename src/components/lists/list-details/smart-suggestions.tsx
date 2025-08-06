@@ -62,7 +62,7 @@ export function SmartSuggestions({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="p-4 space-y-4 text-card-foreground border rounded-lg bg-gray-50">
+    <div className="p-4 space-y-4 text-card-foreground border rounded-lg bg-gray-50 dark:border-gray-600 dark:bg-transparent">
       <button
         className="flex items-start w-full gap-3 text-left"
         onClick={() => setIsExpanded((prev) => !prev)}
@@ -71,8 +71,12 @@ export function SmartSuggestions({
           <Tag className="h-5 w-5 text-blue-600" />
         </div>
         <div className="flex-1">
-          <h2 className="font-bold text-gray-800">Popular by Category</h2>
-          <p className="text-sm text-gray-500">Common items you might need</p>
+          <h2 className="font-bold text-gray-800 dark:text-gray-100">
+            Popular by Category
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Common items you might need
+          </p>
         </div>
         <ChevronDown
           className={`h-5 w-5 text-gray-500 transition-transform ${
@@ -87,7 +91,7 @@ export function SmartSuggestions({
             <div key={category.name} className="space-y-3">
               <div className="flex items-center w-full gap-3">
                 <span className="text-xl">{category.icon}</span>
-                <h3 className="flex-1 font-semibold text-gray-700">
+                <h3 className="flex-1 font-semibold text-gray-700 dark:text-gray-100">
                   {category.name}
                 </h3>
               </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,6 +100,7 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
                 remove(index);
               }}
               aria-label="Remove ingredient"
+              className="text-destructive dark:text-destructive"
             >
               <X className="h-4 w-4" />
               <span className="sr-only">Remove ingredient</span>
@@ -109,7 +110,7 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
       </div>
       <Button
         type="button"
-        variant="outline"
+        variant="third"
         className="w-full"
         onClick={() => {
           append({ name: "", quantity: "", unit: "" });
@@ -117,6 +118,7 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
         }}
         aria-label="Add Ingredient"
       >
+        <Plus className="h-4 w-4" />
         Add Ingredient
       </Button>
     </div>

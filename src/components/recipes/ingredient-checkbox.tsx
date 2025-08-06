@@ -35,7 +35,7 @@ export function IngredientCheckbox({
           />
           <label
             htmlFor={`ingredient-${ingredient.id}`}
-            className="text-sm flex-1 cursor-pointer"
+            className="text-sm flex-1 cursor-pointer text-gray-800 dark:text-gray-100"
           >
             {ingredient.quantity} {ingredient.unit} {ingredient.name}
           </label>

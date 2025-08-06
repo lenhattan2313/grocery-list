@@ -41,7 +41,7 @@ export function ImageToTextButton({
       type="button"
       variant="ghost"
       size="icon"
-      className="absolute right-1 top-1 z-10 h-8 w-8"
+      className="absolute right-1 top-1 z-10 h-8 w-8 text-gray-800 dark:text-gray-100"
       onClick={handleOpenDialog}
       disabled={isOcrLoading || disabled}
       aria-label="Import instructions from image"

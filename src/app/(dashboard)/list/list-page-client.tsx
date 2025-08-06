@@ -81,12 +81,12 @@ export function ListsPageClient({
         <div className="text-center py-12">
           <div className="max-w-md mx-auto">
             <Plus className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 dark:text-gray-100">
               {searchQuery
                 ? "No matching lists found"
                 : "No shopping lists yet"}
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-6 dark:text-gray-400">
               {searchQuery
                 ? "Try adjusting your search terms or clear the search to see all lists."
                 : "Get started by creating your first shopping list. Add items, track your progress, and never forget what you need to buy!"}

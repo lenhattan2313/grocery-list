@@ -29,7 +29,8 @@ export function PageHeaderSearch({ onSearch }: PageHeaderSearchProps) {
           "hover:bg-white hover:border-gray-300",
           "focus:ring-2 focus:ring-gray-200 focus:border-gray-300",
           "transition-all duration-200",
-          "rounded-lg shadow-sm"
+          "rounded-lg shadow-sm",
+          "text-gray-800 dark:text-gray-100"
         )}
       />
     </div>

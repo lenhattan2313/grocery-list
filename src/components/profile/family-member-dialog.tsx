@@ -26,6 +26,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { HouseholdMember } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -180,7 +181,14 @@ export function FamilyMemberDialog({
                 type="submit"
                 aria-label={isEditing ? "Update Member" : "Add Member"}
               >
-                {isEditing ? "Update Member" : "Add Member"}
+                {isEditing ? (
+                  "Update Member"
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4" />
+                    Add Member
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </form>

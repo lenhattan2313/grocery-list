@@ -26,7 +26,7 @@ export function ListDrawerHeader({
         {progress.total > 0 && (
           <div
             className={cn(
-              "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border-2",
+              "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border-1  dark:border-gray-600 bg-transparent",
               getProgressColors(progress.percentage).progressColor
             )}
           >

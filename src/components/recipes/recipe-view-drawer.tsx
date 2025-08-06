@@ -11,6 +11,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer";
 import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
+import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -81,7 +82,9 @@ export function RecipeViewDrawer({
             )}
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Ingredients</h3>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                Ingredients
+              </h3>
               <IngredientCheckbox
                 ingredients={recipe.ingredients}
                 selectedIngredients={selectedIngredients}
@@ -109,6 +112,7 @@ export function RecipeViewDrawer({
                   disabled={selectedIngredients.size === 0}
                   aria-label="Add Selected Ingredients"
                 >
+                  <Plus className="h-4 w-4" />
                   Add Selected
                 </Button>
                 <Button
@@ -116,6 +120,7 @@ export function RecipeViewDrawer({
                   variant="outline"
                   aria-label="Add All Ingredients"
                 >
+                  <Plus className="h-4 w-4" />
                   Add All
                 </Button>
               </div>
