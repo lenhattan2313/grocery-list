@@ -36,6 +36,17 @@ model Account {
   @@map("accounts")
 }
 
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -60,6 +71,8 @@ model User {
   households HouseholdMember[]
   lists      ShoppingList[] // Lists created by the user
   recipes    Recipe[]
+  sessions   Session[]
+
 
   @@map("users")
 }
