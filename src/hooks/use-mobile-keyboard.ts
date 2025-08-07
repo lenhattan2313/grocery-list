@@ -12,11 +12,6 @@ interface UseMobileKeyboardOptions {
    */
   scrollBehavior?: ScrollBehavior;
   /**
-   * Scroll block alignment
-   * @default "center"
-   */
-  scrollBlock?: ScrollLogicalPosition;
-  /**
    * Whether to enable viewport change detection
    * @default true
    */
@@ -24,7 +19,7 @@ interface UseMobileKeyboardOptions {
 }
 
 /**
- * Hook to handle mobile keyboard interactions and auto-scroll input/textarea into view
+ * Hook to handle mobile keyboard interactions and auto-scroll input into view
  */
 export function useMobileKeyboard<
   T extends HTMLInputElement | HTMLTextAreaElement = HTMLInputElement
@@ -32,26 +27,53 @@ export function useMobileKeyboard<
   const {
     scrollDelay = 100,
     scrollBehavior = "smooth",
-    scrollBlock = "center",
     enableViewportDetection = true,
   } = options;
 
   const inputRef = useRef<T>(null);
 
-  const scrollIntoView = useCallback(() => {
+  // Check if element is visible in viewport
+  const isElementVisible = useCallback((element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+
+    // Check if element is within the visible viewport
+    return rect.top >= 0 && rect.bottom <= viewportHeight;
+  }, []);
+
+  // Scroll viewport to make input visible
+  const scrollViewportToInput = useCallback(() => {
     if (inputRef.current) {
-      inputRef.current.scrollIntoView({
-        behavior: scrollBehavior,
-        block: scrollBlock,
-        inline: "nearest",
-      });
+      const rect = inputRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // If input is below the visible area, scroll up
+      if (rect.bottom > viewportHeight) {
+        const scrollAmount = rect.bottom - viewportHeight + 20; // Add 20px padding
+        window.scrollBy({
+          top: scrollAmount,
+          behavior: scrollBehavior,
+        });
+      }
+      // If input is above the visible area, scroll down
+      else if (rect.top < 0) {
+        const scrollAmount = rect.top - 20; // Add 20px padding
+        window.scrollBy({
+          top: scrollAmount,
+          behavior: scrollBehavior,
+        });
+      }
     }
-  }, [scrollBehavior, scrollBlock]);
+  }, [scrollBehavior]);
 
   const handleFocus = useCallback(() => {
     // Small delay to ensure the keyboard animation has started
-    setTimeout(scrollIntoView, scrollDelay);
-  }, [scrollIntoView, scrollDelay]);
+    setTimeout(() => {
+      if (inputRef.current && !isElementVisible(inputRef.current)) {
+        scrollViewportToInput();
+      }
+    }, scrollDelay);
+  }, [scrollDelay, isElementVisible, scrollViewportToInput]);
 
   // Handle viewport changes when keyboard appears/disappears
   useEffect(() => {
@@ -59,8 +81,12 @@ export function useMobileKeyboard<
 
     const handleViewportChange = () => {
       if (inputRef.current && document.activeElement === inputRef.current) {
-        // Re-scroll the input into view when viewport changes
-        setTimeout(scrollIntoView, scrollDelay + 50);
+        // When keyboard appears, check if input is still visible and scroll if needed
+        setTimeout(() => {
+          if (inputRef.current && !isElementVisible(inputRef.current)) {
+            scrollViewportToInput();
+          }
+        }, scrollDelay + 100);
       }
     };
 
@@ -75,11 +101,16 @@ export function useMobileKeyboard<
         );
       };
     }
-  }, [enableViewportDetection, scrollIntoView, scrollDelay]);
+  }, [
+    enableViewportDetection,
+    scrollDelay,
+    isElementVisible,
+    scrollViewportToInput,
+  ]);
 
   return {
     inputRef,
     handleFocus,
-    scrollIntoView,
+    scrollViewportToInput,
   };
 }

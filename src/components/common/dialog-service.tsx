@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useEffect } from "react";
 
 const maxWidthClasses = {
   sm: "sm:max-w-sm",
@@ -43,18 +42,6 @@ export function DialogService() {
   const { isOpen, getActiveDialog, hideDialog } = useDialogStore();
   const activeDialog = getActiveDialog();
 
-  // Prevent body scrolling when dialog is open on mobile
-  useEffect(() => {
-    if (isOpen) {
-      const originalStyle = window.getComputedStyle(document.body).overflow;
-      document.body.style.overflow = "hidden";
-
-      return () => {
-        document.body.style.overflow = originalStyle;
-      };
-    }
-  }, [isOpen]);
-
   if (!activeDialog || !isOpen) return null;
 
   const handleOpenChange = (open: boolean) => {
@@ -73,28 +60,20 @@ export function DialogService() {
       <DialogContent
         className={cn(
           maxWidthClass,
-          // Mobile-optimized dialog styling with proper sizing
-          "max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col",
-          "min-w-[320px] w-full max-w-[calc(100vw-2rem)]",
-          // Proper mobile positioning - centered with margins
-          "fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]",
-          // Ensure proper z-index and mobile viewport handling
-          "z-50",
-          // Mobile keyboard handling - allow content to scroll
-          "overflow-y-auto sm:overflow-hidden"
+          "max-h-[80vh] overflow-hidden flex flex-col min-w-[320px] w-full"
         )}
         showCloseButton={activeDialog.showCloseButton !== false}
       >
-        <DialogHeader className="flex-shrink-0">
+        <DialogHeader>
           <DialogTitle>{activeDialog.title}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto min-h-0 sm:overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {activeDialog.content}
         </div>
 
         {activeDialog.buttons && activeDialog.buttons.length > 0 && (
-          <DialogFooter className="flex-shrink-0">
+          <DialogFooter>
             {activeDialog.buttons.map((button, index) => (
               <Button
                 key={index}

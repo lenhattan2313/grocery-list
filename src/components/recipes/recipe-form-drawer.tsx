@@ -86,7 +86,9 @@ export function RecipeFormDrawer({
   const { mutate: generateRecipe, isPending: isGenerating } =
     useGenerateRecipeMutation();
   const { inputRef: aiPromptRef, handleFocus: handleAiPromptFocus } =
-    useMobileKeyboard<HTMLTextAreaElement>();
+    useMobileKeyboard<HTMLTextAreaElement>({
+      scrollDelay: 150, // Slightly longer delay for textarea
+    });
 
   const form = useForm<CreateRecipeForm>({
     resolver: zodResolver(recipeFormSchema),
