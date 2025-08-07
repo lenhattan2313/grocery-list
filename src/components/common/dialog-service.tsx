@@ -11,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffect } from "react";
 
 const maxWidthClasses = {
   sm: "sm:max-w-sm",
@@ -21,9 +23,37 @@ const maxWidthClasses = {
   full: "sm:max-w-full",
 };
 
+// Loading skeleton component for dialogs
+function DialogLoadingSkeleton() {
+  return (
+    <div className="space-y-4 py-4">
+      <div className="space-y-2 mx-2">
+        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="flex justify-end space-x-2">
+        <Skeleton className="h-10 w-20" />
+        <Skeleton className="h-10 w-24" />
+      </div>
+    </div>
+  );
+}
+
 export function DialogService() {
   const { isOpen, getActiveDialog, hideDialog } = useDialogStore();
   const activeDialog = getActiveDialog();
+
+  // Prevent body scrolling when dialog is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = "hidden";
+
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [isOpen]);
 
   if (!activeDialog || !isOpen) return null;
 
@@ -33,23 +63,38 @@ export function DialogService() {
     }
   };
 
+  // Get the appropriate max-width class, defaulting to md for better initial sizing
+  const maxWidthClass = activeDialog.maxWidth
+    ? maxWidthClasses[activeDialog.maxWidth]
+    : "sm:max-w-md";
+
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className={cn(
-          activeDialog.maxWidth && maxWidthClasses[activeDialog.maxWidth],
-          "max-h-[80vh] overflow-hidden flex flex-col"
+          maxWidthClass,
+          // Mobile-optimized dialog styling with proper sizing
+          "max-h-[85vh] sm:max-h-[80vh] overflow-hidden flex flex-col",
+          "min-w-[320px] w-full max-w-[calc(100vw-2rem)]",
+          // Proper mobile positioning - centered with margins
+          "fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%]",
+          // Ensure proper z-index and mobile viewport handling
+          "z-50",
+          // Mobile keyboard handling - allow content to scroll
+          "overflow-y-auto sm:overflow-hidden"
         )}
         showCloseButton={activeDialog.showCloseButton !== false}
       >
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>{activeDialog.title}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">{activeDialog.content}</div>
+        <div className="flex-1 overflow-y-auto min-h-0 sm:overflow-y-auto">
+          {activeDialog.content}
+        </div>
 
         {activeDialog.buttons && activeDialog.buttons.length > 0 && (
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0">
             {activeDialog.buttons.map((button, index) => (
               <Button
                 key={index}
@@ -89,3 +134,6 @@ export function useDialog() {
     updateDialog,
   };
 }
+
+// Export the loading skeleton for use in dynamic imports
+export { DialogLoadingSkeleton };

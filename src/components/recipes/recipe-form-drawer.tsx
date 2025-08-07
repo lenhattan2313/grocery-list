@@ -29,6 +29,7 @@ import { ImageToTextButton } from "@/components/recipes/image-to-text-button";
 import Image from "next/image";
 import ChatGptLogo from "@/assets/ChatGPT_logo.png";
 import { useGenerateRecipeMutation } from "@/hooks/use-generate-recipe-mutation";
+import { useMobileKeyboard } from "@/hooks/use-mobile-keyboard";
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, "Recipe name is required"),
@@ -84,6 +85,8 @@ export function RecipeFormDrawer({
   const [aiPrompt, setAiPrompt] = useState("");
   const { mutate: generateRecipe, isPending: isGenerating } =
     useGenerateRecipeMutation();
+  const { inputRef: aiPromptRef, handleFocus: handleAiPromptFocus } =
+    useMobileKeyboard<HTMLTextAreaElement>();
 
   const form = useForm<CreateRecipeForm>({
     resolver: zodResolver(recipeFormSchema),
@@ -166,9 +169,11 @@ export function RecipeFormDrawer({
           {showAIPrompt && (
             <div className="space-y-2">
               <Textarea
+                ref={aiPromptRef}
                 placeholder="e.g., 'a healthy salmon recipe with asparagus'"
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
+                onFocus={handleAiPromptFocus}
                 autoFocus
               />
               <Button

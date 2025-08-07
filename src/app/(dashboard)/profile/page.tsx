@@ -11,7 +11,7 @@ export default function ProfilePage() {
       </h2>
       <Suspense
         fallback={
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 sm:px-6 lg:px-8">
             <Skeleton className="h-40" />
             <Skeleton className="h-40" />
           </div>

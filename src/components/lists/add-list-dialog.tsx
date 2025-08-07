@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useOfflineCreateListMutation } from "@/hooks/use-offline-lists";
+import { useMobileKeyboard } from "@/hooks/use-mobile-keyboard";
 import { dialogService } from "@/stores/dialog-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,7 @@ interface AddListFormProps {
 
 function AddListForm({ onSubmit, onCancel, isSubmitting }: AddListFormProps) {
   const [name, setName] = useState("");
+  const { inputRef, handleFocus } = useMobileKeyboard();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,13 +36,19 @@ function AddListForm({ onSubmit, onCancel, isSubmitting }: AddListFormProps) {
         <div className="space-y-2 mx-2">
           <Label htmlFor="list-name">List Name</Label>
           <Input
+            ref={inputRef}
             id="list-name"
             placeholder="e.g., Weekly Groceries"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onFocus={handleFocus}
             maxLength={100}
             disabled={isSubmitting}
             autoFocus
+            // Mobile-specific attributes for better keyboard handling
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
           />
         </div>
       </div>

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { PageSkeleton } from "@/components/common/page-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
+import { DialogLoadingSkeleton } from "@/components/common/dialog-service";
 
 // Dynamic imports for route components
 export const ListsPageClient = dynamic(
@@ -80,7 +81,7 @@ export const AddListDialog = dynamic(
       default: mod.AddListDialogWrapper,
     })),
   {
-    loading: () => <Skeleton className="h-64 w-full" />,
+    loading: () => <DialogLoadingSkeleton />,
     ssr: false,
   }
 );
@@ -91,7 +92,7 @@ export const ShareListDialog = dynamic(
       default: mod.ShareListDialog,
     })),
   {
-    loading: () => <Skeleton className="h-64 w-full" />,
+    loading: () => <DialogLoadingSkeleton />,
     ssr: false,
   }
 );
@@ -113,7 +114,7 @@ export const FamilyMemberDialog = dynamic(
       default: mod.FamilyMemberDialog,
     })),
   {
-    loading: () => <Skeleton className="h-64 w-full" />,
+    loading: () => <DialogLoadingSkeleton />,
     ssr: false,
   }
 );
