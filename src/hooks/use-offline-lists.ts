@@ -340,9 +340,16 @@ export function useManualSync() {
     }
 
     try {
-      await offlineSyncService.forceSyncFromServer(session.user.id);
-      // Invalidate and refetch lists after successful sync
-      await queryClient.invalidateQueries({ queryKey: ["lists"] });
+      const result = await offlineSyncService.forceSyncFromServer(
+        session.user.id
+      );
+
+      if (result.synced) {
+        // Invalidate and refetch lists after successful sync
+        await queryClient.invalidateQueries({ queryKey: ["lists"] });
+      }
+
+      return result;
     } catch (error) {
       console.error("Manual sync failed:", error);
       throw error;
@@ -417,8 +424,10 @@ export function useIndexedDBSync() {
       setSyncStatus((prev) => ({ ...prev, error: null }));
 
       try {
-        // Check if IndexedDB has any lists
+        // Check if IndexedDB has any lists and compare with database
         const dbSize = await offlineSyncService.getDatabaseSize();
+        const comparison =
+          await offlineSyncService.compareDatabaseWithIndexedDB();
 
         setSyncStatus({
           isEmpty: dbSize === 0,
@@ -427,13 +436,19 @@ export function useIndexedDBSync() {
           error: null,
         });
 
-        if (dbSize === 0) {
-          console.log("IndexedDB is empty, triggering manual sync...");
+        if (dbSize === 0 || comparison.needsSync) {
+          console.log(
+            dbSize === 0
+              ? "IndexedDB is empty, triggering manual sync..."
+              : "Differences found between database and IndexedDB, triggering sync..."
+          );
           await syncFromServer();
           setHasSynced(true);
           console.log("Manual sync completed successfully");
         } else {
-          console.log(`IndexedDB has ${dbSize} items, no sync needed`);
+          console.log(
+            `IndexedDB has ${dbSize} items and is in sync, no sync needed`
+          );
           setHasSynced(true);
         }
       } catch (error) {

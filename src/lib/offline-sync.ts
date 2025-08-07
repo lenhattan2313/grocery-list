@@ -98,18 +98,147 @@ class OfflineSyncService {
     }
   }
 
-  // Public method to force sync data from server (useful for manual refresh)
-  public async forceSyncFromServer(userId: string): Promise<void> {
+  // New method to compare database and IndexedDB data
+  public async compareDatabaseWithIndexedDB(): Promise<{
+    needsSync: boolean;
+    differences: {
+      serverCount: number;
+      indexedDBCount: number;
+      missingInIndexedDB: string[];
+      extraInIndexedDB: string[];
+      differentContent: string[];
+    };
+  }> {
     await this.ensureInitialized();
 
     try {
-      console.log("Force syncing data from server to IndexedDB...");
+      // Get data from both sources
+      const serverLists = await getLists();
+      const indexedDBLists = await indexedDBService.getLists();
+
+      const serverIds = new Set(serverLists.map((list) => list.id));
+      const indexedDBIds = new Set(indexedDBLists.map((list) => list.id));
+
+      // Find differences
+      const missingInIndexedDB = serverLists
+        .filter((list) => !indexedDBIds.has(list.id))
+        .map((list) => list.id);
+
+      const extraInIndexedDB = indexedDBLists
+        .filter((list) => !serverIds.has(list.id))
+        .map((list) => list.id);
+
+      // Check for content differences in common lists
+      const differentContent: string[] = [];
+      for (const serverList of serverLists) {
+        const indexedDBList = indexedDBLists.find(
+          (list) => list.id === serverList.id
+        );
+        if (indexedDBList) {
+          // Compare key fields that indicate changes
+          if (
+            serverList.name !== indexedDBList.name ||
+            serverList.isCompleted !== indexedDBList.isCompleted ||
+            serverList.updatedAt.getTime() !==
+              indexedDBList.updatedAt.getTime() ||
+            serverList.items.length !== indexedDBList.items.length ||
+            JSON.stringify(
+              serverList.items.map((item) => ({
+                id: item.id,
+                name: item.name,
+                isCompleted: item.isCompleted,
+              }))
+            ) !==
+              JSON.stringify(
+                indexedDBList.items.map((item) => ({
+                  id: item.id,
+                  name: item.name,
+                  isCompleted: item.isCompleted,
+                }))
+              )
+          ) {
+            differentContent.push(serverList.id);
+          }
+        }
+      }
+
+      const needsSync =
+        missingInIndexedDB.length > 0 ||
+        extraInIndexedDB.length > 0 ||
+        differentContent.length > 0;
+
+      return {
+        needsSync,
+        differences: {
+          serverCount: serverLists.length,
+          indexedDBCount: indexedDBLists.length,
+          missingInIndexedDB,
+          extraInIndexedDB,
+          differentContent,
+        },
+      };
+    } catch (error) {
+      console.error("Failed to compare database with IndexedDB:", error);
+      // If comparison fails, assume sync is needed
+      return {
+        needsSync: true,
+        differences: {
+          serverCount: 0,
+          indexedDBCount: 0,
+          missingInIndexedDB: [],
+          extraInIndexedDB: [],
+          differentContent: [],
+        },
+      };
+    }
+  }
+
+  public async forceSyncFromServer(userId: string): Promise<{
+    synced: boolean;
+    reason: string;
+    differences?: {
+      serverCount: number;
+      indexedDBCount: number;
+      missingInIndexedDB: string[];
+      extraInIndexedDB: string[];
+      differentContent: string[];
+    };
+  }> {
+    await this.ensureInitialized();
+
+    try {
+      console.log("Checking if sync is needed...");
+
+      // Compare database with IndexedDB
+      const comparison = await this.compareDatabaseWithIndexedDB();
+
+      if (!comparison.needsSync) {
+        console.log("No sync needed - database and IndexedDB are in sync");
+        return {
+          synced: false,
+          reason: "No differences found between database and IndexedDB",
+          differences: comparison.differences,
+        };
+      }
+
+      console.log(
+        "Differences found, syncing data from server to IndexedDB..."
+      );
+      console.log("Differences:", comparison.differences);
+
       const serverLists = await getLists();
       await indexedDBService.saveLists(serverLists);
       await this.updateUserData(userId, true);
+
       console.log(
         `Force synced ${serverLists.length} lists from server to IndexedDB`
       );
+
+      return {
+        synced: true,
+        reason: "Successfully synced due to differences",
+        differences: comparison.differences,
+      };
     } catch (error) {
       console.error("Failed to force sync data from server:", error);
       throw error; // Re-throw for manual sync scenarios
