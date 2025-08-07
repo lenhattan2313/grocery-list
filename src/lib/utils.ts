@@ -27,17 +27,17 @@ export function cn(...inputs: ClassValue[]) {
 export function getProgressColors(percentage: number) {
   if (percentage === 100) {
     return {
-      textColor: "text-green-600",
-      progressColor: "bg-green-500",
+      textColor: "text-green-600 dark:text-green-400",
+      progressColor: "bg-green-500 dark:bg-green-900",
     };
   } else if (percentage > 0 && percentage < 100) {
     return {
-      textColor: "text-orange-600",
-      progressColor: "bg-orange-500",
+      textColor: "text-orange-600 dark:text-orange-400",
+      progressColor: "bg-orange-500 dark:bg-orange-400",
     };
   } else {
     return {
-      textColor: "text-gray-600",
+      textColor: "text-gray-600 dark:text-gray-400",
       progressColor: "bg-gray-300 dark:bg-gray-600",
     };
   }
