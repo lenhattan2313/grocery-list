@@ -10,7 +10,7 @@ import { useHouseholdQuery } from "@/hooks/use-household-query";
 
 function ProfileSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="p-4">
           <Skeleton className="h-6 w-1/3 mb-4" />
@@ -63,7 +63,7 @@ export function ProfileDetails() {
   }
 
   return (
-    <div className="space-y-6 mb-16 overflow-y-auto h-[calc(100vh-14rem)]">
+    <div className="space-y-6 mb-16 overflow-y-auto h-[calc(100vh-14rem)] px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* User Profile Section */}
         <Card className="p-4 gap-0">

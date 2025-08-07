@@ -27,7 +27,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-background">
+    <div className="min-h-screen bg-gray-50 dark:bg-background overflow-x-hidden">
       {/* Header */}
       <header className="bg-white dark:bg-background shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,9 +48,7 @@ export default function DashboardLayout({
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-4 lg:px-6 py-6 overflow-x-scroll">
-        {children}
-      </div>
+      <div className="max-w-7xl mx-auto py-6">{children}</div>
 
       {/* Bottom Navigation for Mobile */}
       <Navigation />
