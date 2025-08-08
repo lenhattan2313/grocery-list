@@ -69,7 +69,7 @@ export function ListDetailsDrawer({
     if (!list?.id) return;
 
     const newItem: ShoppingItem = {
-      id: `temp-${Date.now()}`,
+      id: `temp-${Math.random().toString(36).substr(2, 9)}`,
       listId: list.id,
       ...data,
       isCompleted: false,
@@ -84,7 +84,7 @@ export function ListDetailsDrawer({
     if (!list?.id) return;
 
     const newItem: ShoppingItem = {
-      id: `temp-${Date.now()}`,
+      id: `temp-${Math.random().toString(36).substr(2, 9)}`,
       listId: list.id,
       name: itemName,
       quantity: 1,
@@ -195,6 +195,7 @@ export function ListDetailsDrawer({
             onSaveEdit={handleSaveEdit}
             onCancelEdit={handleCancelEdit}
             isOwner={isOwner}
+            listName={list.name}
           />
         </div>
 

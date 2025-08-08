@@ -16,6 +16,7 @@ import {
 import { Plus } from "lucide-react";
 import { UNIT_OPTIONS } from "@/constants/unit";
 import { CreateItemSchema } from "@/schema/item-schema";
+import { VoiceInputButton } from "@/components/lists/voice-input-button";
 
 interface AddItemFormProps {
   onAddItem: (data: z.infer<typeof CreateItemSchema>) => void;
@@ -43,6 +44,18 @@ export function AddItemForm({ onAddItem }: AddItemFormProps) {
     reset();
   };
 
+  const handleVoiceItemsParsed = (
+    items: Array<{ name: string; quantity: number; unit: string }>
+  ) => {
+    items.forEach((item) => {
+      onAddItem({
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+      });
+    });
+  };
+
   return (
     <form
       onSubmit={handleSubmit(handleFormSubmit)}
@@ -53,15 +66,21 @@ export function AddItemForm({ onAddItem }: AddItemFormProps) {
           <Label className="text-gray-800 dark:text-gray-100">
             Add New Item
           </Label>
-          <Button
-            type="submit"
-            className="shrink-0"
-            size="sm"
-            aria-label="Add Item"
-          >
-            <Plus className="h-4 w-4" />
-            Add
-          </Button>
+          <div className="flex items-center gap-2">
+            <VoiceInputButton
+              onItemsParsed={handleVoiceItemsParsed}
+              disabled={false}
+            />
+            <Button
+              type="submit"
+              className="shrink-0"
+              size="sm"
+              aria-label="Add Item"
+            >
+              <Plus className="h-4 w-4" />
+              Add
+            </Button>
+          </div>
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
