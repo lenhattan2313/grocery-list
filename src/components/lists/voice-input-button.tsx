@@ -179,13 +179,14 @@ export function VoiceInputButton({
           onClick={handleStartListening}
           disabled={disabled || isListening}
           className={cn(
-            "transition-all duration-200",
+            "transition-all duration-200 animate-pulse-once",
             isListening && "bg-primary text-primary-foreground",
             className
           )}
           title="Add items by voice"
+          aria-label="Add items by voice"
         >
-          <Mic className="h-4 w-4" />
+          <Mic className={cn("h-4 w-4", isListening && "animate-pulse")} />
         </Button>
       </PopoverTrigger>
       <PopoverContent
