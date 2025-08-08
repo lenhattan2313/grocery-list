@@ -63,7 +63,7 @@ function Button({
       {isLoading && <Loader className="animate-spin" />}
       <span
         className={cn("inline-flex items-center gap-2", {
-          "opacity-0": isLoading,
+          "opacity-80": isLoading,
         })}
       >
         {children}

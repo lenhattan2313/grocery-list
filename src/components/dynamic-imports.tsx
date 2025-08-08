@@ -97,6 +97,17 @@ export const ShareListDialog = dynamic(
   }
 );
 
+export const ReminderDialog = dynamic(
+  () =>
+    import("@/components/lists/reminder-dialog").then((mod) => ({
+      default: mod.ReminderDialog,
+    })),
+  {
+    loading: () => <DialogLoadingSkeleton />,
+    ssr: false,
+  }
+);
+
 export const ShoppingListCard = dynamic(
   () =>
     import("@/components/lists/shopping-list-card").then((mod) => ({

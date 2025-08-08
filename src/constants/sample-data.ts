@@ -9,6 +9,10 @@ export const SAMPLE_LISTS: ShoppingListWithItems[] = [
     updatedAt: new Date("2024-01-15T10:00:00Z"),
     userId: "sample-user-1",
     householdId: null,
+    hasReminder: false,
+    reminderTime: null,
+    reminderMessage: null,
+    reminderSent: false,
     items: [
       {
         id: "item-1",
@@ -85,6 +89,10 @@ export const SAMPLE_LISTS: ShoppingListWithItems[] = [
     updatedAt: new Date("2024-01-14T15:30:00Z"),
     userId: "sample-user-1",
     householdId: null,
+    hasReminder: false,
+    reminderTime: null,
+    reminderMessage: null,
+    reminderSent: false,
     items: [
       {
         id: "item-6",
@@ -150,6 +158,10 @@ export const SAMPLE_LISTS: ShoppingListWithItems[] = [
     updatedAt: new Date("2024-01-13T08:00:00Z"),
     userId: "sample-user-1",
     householdId: null,
+    hasReminder: false,
+    reminderTime: null,
+    reminderMessage: null,
+    reminderSent: false,
     items: [
       {
         id: "item-10",
@@ -215,6 +227,10 @@ export const SAMPLE_LISTS: ShoppingListWithItems[] = [
     updatedAt: new Date("2024-01-12T18:00:00Z"),
     userId: "sample-user-1",
     householdId: null,
+    hasReminder: false,
+    reminderTime: null,
+    reminderMessage: null,
+    reminderSent: false,
     items: [
       {
         id: "item-14",

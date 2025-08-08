@@ -44,6 +44,10 @@ export function useCreateListMutation() {
         updatedAt: new Date(),
         userId: "optimistic-user", // Placeholder, will be replaced by server response
         householdId: null,
+        hasReminder: false,
+        reminderTime: null,
+        reminderMessage: null,
+        reminderSent: false,
         items: [],
         household: null,
         user: {

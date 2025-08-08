@@ -118,6 +118,10 @@ export function useOfflineCreateListMutation() {
         updatedAt: new Date(),
         userId: session?.user?.id || "optimistic-user",
         householdId: null,
+        hasReminder: false,
+        reminderTime: null,
+        reminderMessage: null,
+        reminderSent: false,
         items: [],
         household: null,
         user: {

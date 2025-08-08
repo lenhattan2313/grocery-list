@@ -19,4 +19,9 @@ export const config = {
   openai: {
     apiKey: process.env.GITHUB_TOKEN,
   },
+  push: {
+    vapidPublicKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    vapidPrivateKey: process.env.VAPID_PRIVATE_KEY,
+    vapidSubject: process.env.VAPID_SUBJECT || "mailto:your-email@example.com",
+  },
 };

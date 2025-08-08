@@ -35,3 +35,47 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+// Add push notification handling
+self.addEventListener("push", function (event) {
+  if (event.data) {
+    const data = event.data.json();
+    const options = {
+      body: data.message,
+      icon: "/icon512_rounded.png",
+      badge: "/icon512_rounded.png",
+      tag: "shopping-reminder",
+      requireInteraction: false,
+      data: data.data || {},
+      actions: [
+        {
+          action: "view",
+          title: "View List",
+        },
+        {
+          action: "dismiss",
+          title: "Dismiss",
+        },
+      ],
+    };
+
+    event.waitUntil(self.registration.showNotification(data.title, options));
+  }
+});
+
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+
+  if (event.action === "view" && event.notification.data?.listId) {
+    // Open the specific list
+    event.waitUntil(
+      self.clients.openWindow(`/?listId=${event.notification.data.listId}`)
+    );
+  } else if (event.action === "dismiss") {
+    // Just close the notification
+    return;
+  } else {
+    // Default action - open the app
+    event.waitUntil(self.clients.openWindow("/"));
+  }
+});

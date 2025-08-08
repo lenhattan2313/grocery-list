@@ -6,7 +6,7 @@ import {
   useOfflineUpdateListNameMutation,
 } from "@/hooks/use-offline-lists";
 import type { ShoppingListWithItems } from "@/types/list";
-import { MoreVertical, Trash2, Edit, Share2 } from "lucide-react";
+import { MoreVertical, Trash2, Edit, Share2, Bell } from "lucide-react";
 import { ClientRelativeTime } from "@/components/common/client-relative-time";
 import { useSession } from "next-auth/react";
 import { useHouseholdQuery } from "@/hooks/use-household-query";
@@ -33,6 +33,8 @@ import { useState, useRef, useEffect, KeyboardEvent } from "react";
 import { ShareListDialog } from "./share-list-dialog";
 import { useDialog } from "@/components/common/dialog-service";
 import { getSequentialIcon, iconMap } from "@/lib/utils";
+import { showReminderDialog } from "./reminder-dialog";
+import { format } from "date-fns";
 
 interface ShoppingListCardProps {
   list: ShoppingListWithItems;
@@ -139,6 +141,20 @@ const ShoppingListCardComponent = ({
     });
   };
 
+  const handleReminderClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    showReminderDialog(
+      optimisticList.id,
+      optimisticList.name,
+      optimisticList.hasReminder
+        ? {
+            reminderTime: optimisticList.reminderTime!.toISOString(),
+            reminderMessage: optimisticList.reminderMessage || undefined,
+          }
+        : undefined
+    );
+  };
+
   if (isDeleting) {
     return null; // Optimistically remove the card
   }
@@ -179,34 +195,52 @@ const ShoppingListCardComponent = ({
             )}
 
             {!isEditing && isOwner && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
+              <div className="flex items-center gap-2">
+                {optimisticList.hasReminder && (
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800"
+                  >
+                    <Bell className="h-3 w-3 mr-1" />
+                    {format(
+                      new Date(optimisticList.reminderTime!),
+                      "MMM d, h:mm a"
+                    )}
+                  </Badge>
+                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => e.stopPropagation()}
+                      aria-label="Open menu"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
                     onClick={(e) => e.stopPropagation()}
-                    aria-label="Open menu"
                   >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <DropdownMenuItem onClick={handleEdit}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    <span>Edit</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                  >
-                    <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                    <span>Delete</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                    <DropdownMenuItem onClick={handleEdit}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      <span>Edit</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleReminderClick}>
+                      <Bell className="mr-2 h-4 w-4 text-blue-500" />
+                      <span>Reminder</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                      <span>Delete</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             )}
           </div>
           <CardDescription>
@@ -259,7 +293,7 @@ const ShoppingListCardComponent = ({
               </Button>
             </div>
           ) : (
-            <div />
+            <div className="flex gap-2"></div>
           )}
           {canShare && (
             <Button
@@ -289,6 +323,8 @@ function areEqual(
     prevProps.list.isCompleted === nextProps.list.isCompleted &&
     prevProps.list.items.length === nextProps.list.items.length &&
     prevProps.list.updatedAt === nextProps.list.updatedAt &&
+    prevProps.list.hasReminder === nextProps.list.hasReminder &&
+    prevProps.list.reminderTime === nextProps.list.reminderTime &&
     prevProps.onViewList === nextProps.onViewList &&
     prevProps.index === nextProps.index
   );

@@ -72,6 +72,7 @@ model User {
   households HouseholdMember[]
   lists      ShoppingList[] // Lists created by the user
   recipes    Recipe[]
+  pushSubscriptions PushSubscription[] // Push notification subscriptions
 
   @@map("users")
 }
@@ -116,6 +117,12 @@ model ShoppingList {
   updatedAt   DateTime @updatedAt
   userId      String // Owner of the list
   householdId String?
+
+  // Add reminder fields
+  hasReminder    Boolean  @default(false)
+  reminderTime   DateTime?
+  reminderMessage String?
+  reminderSent   Boolean  @default(false) // Track if reminder notification was sent
 
   // Relations
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -175,4 +182,19 @@ model RecipeIngredient {
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   @@map("recipe_ingredients")
+}
+
+model PushSubscription {
+  id           String   @id @default(cuid())
+  userId       String
+  endpoint     String   @unique
+  p256dh       String
+  auth         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_subscriptions")
 }
