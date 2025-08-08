@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ThemeSwitch } from "@/components/ui/theme-switch";
-import { Button } from "@/components/ui/button";
 import { Bell, BellOff } from "lucide-react";
 import { useThemeEnhanced } from "@/hooks/use-theme";
 import { useListReminders } from "@/hooks/use-list-reminders";
@@ -17,7 +16,6 @@ export function PreferencesSection() {
     requestPermission,
     subscribeToPushNotifications,
     unsubscribeFromPushNotifications,
-    sendTestNotification,
   } = useListReminders();
 
   const handlePushNotificationToggle = async (enabled: boolean) => {
@@ -40,16 +38,6 @@ export function PreferencesSection() {
     } catch (error) {
       console.error("Failed to toggle push notifications:", error);
       toast.error("Failed to update push notification settings");
-    }
-  };
-
-  const handleTestNotification = async () => {
-    try {
-      await sendTestNotification();
-      toast.success("Test notification sent");
-    } catch (error) {
-      console.error("Failed to send test notification:", error);
-      toast.error("Failed to send test notification");
     }
   };
 
@@ -99,20 +87,9 @@ export function PreferencesSection() {
           )}
 
           {isSubscribed === true && (
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleTestNotification}
-                className="text-xs"
-              >
-                <Bell className="h-3 w-3 mr-1" />
-                Send Test
-              </Button>
-              <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                <Bell className="h-3 w-3" />
-                Active
-              </div>
+            <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+              <Bell className="h-3 w-3" />
+              Active
             </div>
           )}
 
