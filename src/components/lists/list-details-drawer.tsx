@@ -195,7 +195,6 @@ export function ListDetailsDrawer({
             onSaveEdit={handleSaveEdit}
             onCancelEdit={handleCancelEdit}
             isOwner={isOwner}
-            listName={list.name}
           />
         </div>
 

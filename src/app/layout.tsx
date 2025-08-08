@@ -3,10 +3,11 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PerformanceMonitor } from "@/components/common/performance-monitor";
+import { SplashScreen } from "@/components/common/splash-screen";
 // import { STATIC_CRITICAL_CSS } from "@/components/common/critical-css";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -101,7 +102,7 @@ export const metadata: Metadata = {
     title: "Grocery App",
   },
   other: {
-    "theme-color": "#000000",
+    "theme-color": "#10b981",
     "Cache-Control": "public, max-age=31536000, immutable",
     "X-Frame-Options": "DENY",
     "X-Content-Type-Options": "nosniff",
@@ -113,7 +114,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#000000",
+  themeColor: "#10b981",
 };
 
 export default function RootLayout({
@@ -127,9 +128,11 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <QueryProvider>
-              {children}
-              <DialogService />
-              <PerformanceMonitor />
+              <SplashScreen>
+                {children}
+                <DialogService />
+                <PerformanceMonitor />
+              </SplashScreen>
             </QueryProvider>
             <Toaster position="top-center" />
           </AuthProvider>

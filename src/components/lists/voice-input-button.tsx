@@ -4,11 +4,7 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { Mic, Volume2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
 import { VoiceParser } from "@/lib/voice-parser";
@@ -164,6 +160,7 @@ export function VoiceInputButton({
         disabled={true}
         className={cn("text-muted-foreground border-red-500", className)}
         title="Voice input not supported - Please use Chrome or Safari"
+        aria-label="Voice input not supported - Please use Chrome or Safari"
       >
         <Mic className="h-4 w-4" />
       </Button>
@@ -171,8 +168,8 @@ export function VoiceInputButton({
   }
 
   return (
-    <Popover open={isOpen} onOpenChange={handleOpenChange}>
-      <PopoverTrigger asChild>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
         <Button
           variant="outline"
           size="icon"
@@ -188,12 +185,10 @@ export function VoiceInputButton({
         >
           <Mic className={cn("h-4 w-4", isListening && "animate-pulse")} />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-80 sm:w-96 lg:w-[28rem] p-4"
-        align="end"
-        side="bottom"
-        sideOffset={8}
+      </DialogTrigger>
+      <DialogContent
+        className="w-[calc(100vw-2rem)] max-w-md sm:max-w-lg lg:max-w-xl p-4"
+        showCloseButton={false}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
@@ -213,6 +208,8 @@ export function VoiceInputButton({
             size="icon"
             onClick={handleCancel}
             className="h-6 w-6"
+            title="Cancel"
+            aria-label="Cancel voice input"
           >
             <X className="h-3 w-3" />
           </Button>
@@ -267,7 +264,12 @@ export function VoiceInputButton({
                   <div className="flex items-center gap-2">
                     <Badge
                       variant={item.confidence > 0.7 ? "default" : "secondary"}
-                      className="text-xs"
+                      className={cn(
+                        "text-xs",
+                        item.confidence > 0.7
+                          ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50"
+                          : "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700/50"
+                      )}
                     >
                       {Math.round(item.confidence * 100)}%
                     </Badge>
@@ -275,6 +277,7 @@ export function VoiceInputButton({
                       size="sm"
                       onClick={() => handleAddSingleItem(item)}
                       className="h-6 px-2 text-xs"
+                      aria-label={`Add ${item.name} to list`}
                     >
                       Add
                     </Button>
@@ -291,11 +294,17 @@ export function VoiceInputButton({
             onClick={handleStopListening}
             className="flex-1"
             disabled={parsedItems.length === 0}
+            aria-label={`Add all ${parsedItems.length} items to list`}
           >
             <Volume2 className="h-4 w-4 mr-2" />
             Add All ({parsedItems.length})
           </Button>
-          <Button variant="outline" onClick={handleCancel} className="flex-1">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            className="flex-1"
+            aria-label="Cancel voice input"
+          >
             Cancel
           </Button>
         </div>
@@ -309,7 +318,7 @@ export function VoiceInputButton({
             <li>• &ldquo;500 grams of chicken, one pack of pasta&rdquo;</li>
           </ul>
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   );
 }
