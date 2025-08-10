@@ -27,7 +27,7 @@
   "display": "standalone",
   "dir": "auto",
   "lang": "en",
-  "name": "Grocery App - Smart Shopping Lists & Recipes",
+  "name": "Grocery App",
   "short_name": "Grocery App",
   "description": "A smart grocery shopping companion for families",
   "permissions": ["microphone"],
