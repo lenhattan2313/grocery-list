@@ -19,6 +19,16 @@ interface VoiceRecognitionOptions {
   maxAlternatives?: number;
 }
 
+function getIOSVersion(): number {
+  if (/iP(hone|od|ad)/.test(navigator.platform)) {
+    const v = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
+    return parseFloat(
+      `${parseInt(v?.[1] || "0", 10)}.${parseInt(v?.[2] || "0", 10)}`
+    );
+  }
+  return 0;
+}
+
 export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
   const [state, setState] = useState<VoiceRecognitionState>({
     isListening: false,
@@ -32,8 +42,8 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
   const recognitionRef = useRef<any | null>(null);
   const finalTranscriptRef = useRef("");
   const { isPWA, isIOS } = usePWADetection();
+  const iOSVersion = getIOSVersion();
 
-  // Check if speech recognition is supported and handle iOS-specific issues
   useEffect(() => {
     const SpeechRecognition =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,173 +51,139 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).webkitSpeechRecognition;
     const isSupported = !!SpeechRecognition;
-
     setState((prev) => ({ ...prev, isSupported }));
 
-    if (isSupported) {
-      const recognition = new SpeechRecognition();
+    if (!isSupported) return;
 
-      // iOS-specific configurations - these are crucial for iOS PWA
-      if (isIOS) {
-        // iOS works much better with these settings
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-      } else {
-        // Default settings for other platforms
-        recognition.continuous = options.continuous ?? true;
-        recognition.interimResults = options.interimResults ?? true;
-        recognition.maxAlternatives = options.maxAlternatives ?? 1;
-      }
-
-      recognition.lang = options.lang ?? "en-US";
-
-      // iOS-specific: Set recognition mode for better compatibility
-      if (recognition.recognitionMode) {
-        recognition.recognitionMode = "continuous";
-      }
-
-      // Event handlers
-      recognition.onstart = () => {
-        setState((prev) => ({
-          ...prev,
-          isListening: true,
-          error: null,
-          transcript: "",
-        }));
-        finalTranscriptRef.current = "";
-      };
-
-      recognition.onresult = (event) => {
-        let interimTranscript = "";
-        let finalTranscript = finalTranscriptRef.current;
-        let confidence = 0;
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          const isFinal = event.results[i].isFinal;
-
-          if (isFinal) {
-            finalTranscript += transcript;
-            confidence = Math.max(confidence, event.results[i][0].confidence);
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-
-        finalTranscriptRef.current = finalTranscript;
-
-        setState((prev) => ({
-          ...prev,
-          transcript: finalTranscript + interimTranscript,
-          confidence,
-        }));
-      };
-
-      recognition.onerror = (event) => {
-        let errorMessage = "Speech recognition error";
-
-        switch (event.error) {
-          case "no-speech":
-            errorMessage = "No speech detected. Please try again.";
-            break;
-          case "audio-capture":
-            errorMessage =
-              "Audio capture failed. Please check your microphone permissions.";
-            break;
-          case "not-allowed":
-            errorMessage =
-              "Microphone access denied. Please allow microphone access in your browser settings.";
-            break;
-          case "network":
-            errorMessage = "Network error occurred.";
-            break;
-          case "service-not-allowed":
-            errorMessage = "Speech recognition service not allowed.";
-            break;
-          case "aborted":
-            errorMessage =
-              "Voice recognition was interrupted. Please try again.";
-            break;
-          case "bad-grammar":
-            errorMessage = "Speech recognition grammar error.";
-            break;
-          case "language-not-supported":
-            errorMessage = "Language not supported. Please use English.";
-            break;
-          default:
-            errorMessage = `Speech recognition error: ${event.error}`;
-        }
-
-        setState((prev) => ({
-          ...prev,
-          isListening: false,
-          error: errorMessage,
-        }));
-
-        // Don't show toast for aborted errors as they're usually user-initiated
-        if (event.error !== "aborted") {
-          toast.error("Voice Recognition Error", {
-            description: errorMessage,
-          });
-        }
-      };
-
-      recognition.onend = () => {
-        setState((prev) => ({ ...prev, isListening: false }));
-      };
-
-      recognitionRef.current = recognition;
+    const recognition = new SpeechRecognition();
+    if (isIOS) {
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+    } else {
+      recognition.continuous = options.continuous ?? true;
+      recognition.interimResults = options.interimResults ?? true;
+      recognition.maxAlternatives = options.maxAlternatives ?? 1;
     }
+    recognition.lang = options.lang ?? "en-US";
+
+    recognition.onstart = () => {
+      setState((prev) => ({
+        ...prev,
+        isListening: true,
+        error: null,
+        transcript: "",
+      }));
+      finalTranscriptRef.current = "";
+    };
+
+    recognition.onresult = (event) => {
+      let interimTranscript = "";
+      let finalTranscript = finalTranscriptRef.current;
+      let confidence = 0;
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        const isFinal = event.results[i].isFinal;
+        if (isFinal) {
+          finalTranscript += transcript;
+          confidence = Math.max(confidence, event.results[i][0].confidence);
+        } else {
+          interimTranscript += transcript;
+        }
+      }
+
+      finalTranscriptRef.current = finalTranscript;
+      setState((prev) => ({
+        ...prev,
+        transcript: finalTranscript + interimTranscript,
+        confidence,
+      }));
+    };
+
+    recognition.onerror = (event) => {
+      let errorMessage = `Speech recognition error: ${event.error}`;
+      switch (event.error) {
+        case "no-speech":
+          errorMessage = "No speech detected. Please try again.";
+          break;
+        case "audio-capture":
+          errorMessage =
+            "Audio capture failed. Please check your microphone permissions.";
+          break;
+        case "not-allowed":
+          errorMessage =
+            "Microphone access denied. Please allow microphone access in your browser settings.";
+          break;
+        case "network":
+          errorMessage = "Network error occurred.";
+          break;
+        case "service-not-allowed":
+          errorMessage = "Speech recognition service not allowed.";
+          break;
+        case "aborted":
+          errorMessage = "Voice recognition was interrupted. Please try again.";
+          break;
+        case "bad-grammar":
+          errorMessage = "Speech recognition grammar error.";
+          break;
+        case "language-not-supported":
+          errorMessage = "Language not supported. Please use English.";
+          break;
+      }
+      setState((prev) => ({
+        ...prev,
+        isListening: false,
+        error: errorMessage,
+      }));
+      if (event.error !== "aborted") {
+        toast.error("Voice Recognition Error", { description: errorMessage });
+      }
+    };
+
+    recognition.onend = () => {
+      setState((prev) => ({ ...prev, isListening: false }));
+    };
+
+    recognitionRef.current = recognition;
   }, [
     options.continuous,
     options.interimResults,
     options.lang,
     options.maxAlternatives,
-    isPWA,
     isIOS,
   ]);
 
-  const startListening = useCallback(async () => {
+  const startListening = useCallback(() => {
     if (!recognitionRef.current) {
       toast.error("Speech recognition not supported");
       return;
     }
 
-    // Check if we're in a PWA context and handle iOS-specific requirements
-    if (isPWA) {
-      // For iOS PWA, we need to ensure microphone permissions are granted
-      try {
-        // Request microphone permission explicitly
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
-        stream.getTracks().forEach((track) => track.stop()); // Stop the stream immediately
-      } catch {
+    // Early block for old iOS PWAs
+    if (isPWA && isIOS && iOSVersion < 17.4) {
+      toast.error("Not Supported", {
+        description:
+          "Microphone is not available in PWAs on iOS before version 17.4. Please open in Safari.",
+      });
+      return;
+    }
+
+    // Must be inside a user gesture
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        // Stop the stream immediately
+        stream.getTracks().forEach((track) => track.stop());
+        recognitionRef.current.start();
+      })
+      .catch(() => {
         toast.error("Microphone Permission Required", {
           description:
             "Please allow microphone access in your device settings to use voice input.",
         });
-        return;
-      }
-    }
-
-    try {
-      // For iOS PWA, add a small delay before starting
-      if (isIOS && isPWA) {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-      }
-
-      recognitionRef.current.start();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to start listening";
-      setState((prev) => ({ ...prev, error: errorMessage }));
-      toast.error("Failed to start voice recognition", {
-        description: errorMessage,
       });
-    }
-  }, [isPWA, isIOS]);
+  }, [isPWA, isIOS, iOSVersion]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current && state.isListening) {
