@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
+import { usePWADetection } from "@/hooks/use-pwa-detection";
 import { VoiceParser } from "@/lib/voice-parser";
 import { toast } from "sonner";
 
@@ -48,6 +49,7 @@ export function VoiceInputButton({
   });
 
   const voiceParser = useMemo(() => new VoiceParser(), []);
+  const { isPWA, isIOS } = usePWADetection();
 
   // Auto-parse when transcript changes
   useEffect(() => {
@@ -70,13 +72,28 @@ export function VoiceInputButton({
     }
   }, [isListening, transcript, stopListening]);
 
-  const handleStartListening = useCallback(() => {
+  const handleStartListening = useCallback(async () => {
     if (!isSupported) {
       toast.error("Voice recognition not supported", {
         description:
           "Your browser doesn't support speech recognition. Please use Chrome or Safari.",
       });
       return;
+    }
+
+    // Check if we're in iOS PWA mode and handle permissions
+    if (isIOS && isPWA) {
+      try {
+        // Explicitly request microphone permission for iOS PWA
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (error) {
+        console.error("Microphone permission error:", error);
+        toast.error("Microphone Permission Required", {
+          description:
+            "Please allow microphone access in your device settings to use voice input.",
+        });
+        return;
+      }
     }
 
     // Reset any previous errors

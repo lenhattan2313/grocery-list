@@ -29,5 +29,12 @@
   "lang": "en",
   "name": "Grocery App - Smart Shopping Lists & Recipes",
   "short_name": "Grocery App",
-  "description": "A smart grocery shopping companion for families"
+  "description": "A smart grocery shopping companion for families",
+  "permissions": ["microphone"],
+  "categories": ["productivity", "utilities"],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }

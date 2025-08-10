@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { usePWADetection } from "./use-pwa-detection";
 
 interface VoiceRecognitionState {
   isListening: boolean;
@@ -30,8 +31,9 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any | null>(null);
   const finalTranscriptRef = useRef("");
+  const { isPWA } = usePWADetection();
 
-  // Check if speech recognition is supported
+  // Check if speech recognition is supported and handle iOS-specific issues
   useEffect(() => {
     const SpeechRecognition =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -50,6 +52,11 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
       recognition.interimResults = options.interimResults ?? true;
       recognition.lang = options.lang ?? "en-US";
       recognition.maxAlternatives = options.maxAlternatives ?? 1;
+
+      // iOS-specific: Set recognition mode for better compatibility
+      if (recognition.recognitionMode) {
+        recognition.recognitionMode = "continuous";
+      }
 
       // Event handlers
       recognition.onstart = () => {
@@ -97,11 +104,11 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
             break;
           case "audio-capture":
             errorMessage =
-              "Audio capture failed. Please check your microphone.";
+              "Audio capture failed. Please check your microphone permissions.";
             break;
           case "not-allowed":
             errorMessage =
-              "Microphone access denied. Please allow microphone access.";
+              "Microphone access denied. Please allow microphone access in your browser settings.";
             break;
           case "network":
             errorMessage = "Network error occurred.";
@@ -152,10 +159,29 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
     options.maxAlternatives,
   ]);
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (!recognitionRef.current) {
       toast.error("Speech recognition not supported");
       return;
+    }
+
+    // Check if we're in a PWA context and handle iOS-specific requirements
+    if (isPWA) {
+      // For iOS PWA, we need to ensure microphone permissions are granted
+      try {
+        // Request microphone permission explicitly
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+        stream.getTracks().forEach((track) => track.stop()); // Stop the stream immediately
+      } catch (error) {
+        console.log("Microphone permission error:", error);
+        toast.error("Microphone Permission Required", {
+          description:
+            "Please allow microphone access in your device settings to use voice input.",
+        });
+        return;
+      }
     }
 
     try {
