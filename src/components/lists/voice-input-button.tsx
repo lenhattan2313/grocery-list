@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
+import { useVoiceRecognitionIOS } from "@/hooks/use-voice-recognition-ios";
 import { usePWADetection } from "@/hooks/use-pwa-detection";
 import { VoiceParser } from "@/lib/voice-parser";
 import { toast } from "sonner";
@@ -34,6 +34,9 @@ export function VoiceInputButton({
     }>
   >([]);
 
+  const voiceParser = useMemo(() => new VoiceParser(), []);
+  const { isPWA, isIOS } = usePWADetection();
+
   const {
     isListening,
     isSupported,
@@ -42,14 +45,11 @@ export function VoiceInputButton({
     stopListening,
     reset,
     clearTranscript,
-  } = useVoiceRecognition({
-    continuous: true,
-    interimResults: true,
+  } = useVoiceRecognitionIOS({
+    continuous: !isIOS, // iOS works better with non-continuous
+    interimResults: !isIOS, // iOS works better without interim results
     lang: "en-US",
   });
-
-  const voiceParser = useMemo(() => new VoiceParser(), []);
-  const { isPWA, isIOS } = usePWADetection();
 
   // Auto-parse when transcript changes
   useEffect(() => {
