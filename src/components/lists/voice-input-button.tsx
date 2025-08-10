@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { useVoiceRecognitionIOS } from "@/hooks/use-voice-recognition-ios";
+import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
 import { usePWADetection } from "@/hooks/use-pwa-detection";
 import { VoiceParser } from "@/lib/voice-parser";
 import { toast } from "sonner";
@@ -34,9 +34,6 @@ export function VoiceInputButton({
     }>
   >([]);
 
-  const voiceParser = useMemo(() => new VoiceParser(), []);
-  const { isPWA, isIOS } = usePWADetection();
-
   const {
     isListening,
     isSupported,
@@ -45,11 +42,14 @@ export function VoiceInputButton({
     stopListening,
     reset,
     clearTranscript,
-  } = useVoiceRecognitionIOS({
-    continuous: !isIOS, // iOS works better with non-continuous
-    interimResults: !isIOS, // iOS works better without interim results
+  } = useVoiceRecognition({
+    continuous: true,
+    interimResults: true,
     lang: "en-US",
   });
+
+  const voiceParser = useMemo(() => new VoiceParser(), []);
+  const { isPWA, isIOS } = usePWADetection();
 
   // Auto-parse when transcript changes
   useEffect(() => {
@@ -86,8 +86,7 @@ export function VoiceInputButton({
       try {
         // Explicitly request microphone permission for iOS PWA
         await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch (error) {
-        console.error("Microphone permission error:", error);
+      } catch {
         toast.error("Microphone Permission Required", {
           description:
             "Please allow microphone access in your device settings to use voice input.",
@@ -107,7 +106,7 @@ export function VoiceInputButton({
         description: "Speak your shopping items clearly",
       });
     }, 100);
-  }, [isSupported, reset, startListening]);
+  }, [isSupported, reset, startListening, isIOS, isPWA]);
 
   const handleStopListening = useCallback(() => {
     stopListening();

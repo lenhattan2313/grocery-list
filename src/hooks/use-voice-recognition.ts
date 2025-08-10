@@ -31,7 +31,7 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any | null>(null);
   const finalTranscriptRef = useRef("");
-  const { isPWA } = usePWADetection();
+  const { isPWA, isIOS } = usePWADetection();
 
   // Check if speech recognition is supported and handle iOS-specific issues
   useEffect(() => {
@@ -47,11 +47,20 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
     if (isSupported) {
       const recognition = new SpeechRecognition();
 
-      // Configure recognition
-      recognition.continuous = options.continuous ?? true;
-      recognition.interimResults = options.interimResults ?? true;
+      // iOS-specific configurations - these are crucial for iOS PWA
+      if (isIOS) {
+        // iOS works much better with these settings
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+      } else {
+        // Default settings for other platforms
+        recognition.continuous = options.continuous ?? true;
+        recognition.interimResults = options.interimResults ?? true;
+        recognition.maxAlternatives = options.maxAlternatives ?? 1;
+      }
+
       recognition.lang = options.lang ?? "en-US";
-      recognition.maxAlternatives = options.maxAlternatives ?? 1;
 
       // iOS-specific: Set recognition mode for better compatibility
       if (recognition.recognitionMode) {
@@ -130,8 +139,6 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
             errorMessage = `Speech recognition error: ${event.error}`;
         }
 
-        console.log("Voice recognition error:", event.error, errorMessage);
-
         setState((prev) => ({
           ...prev,
           isListening: false,
@@ -157,6 +164,8 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
     options.interimResults,
     options.lang,
     options.maxAlternatives,
+    isPWA,
+    isIOS,
   ]);
 
   const startListening = useCallback(async () => {
@@ -174,8 +183,7 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
           audio: true,
         });
         stream.getTracks().forEach((track) => track.stop()); // Stop the stream immediately
-      } catch (error) {
-        console.log("Microphone permission error:", error);
+      } catch {
         toast.error("Microphone Permission Required", {
           description:
             "Please allow microphone access in your device settings to use voice input.",
@@ -185,6 +193,11 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
     }
 
     try {
+      // For iOS PWA, add a small delay before starting
+      if (isIOS && isPWA) {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+
       recognitionRef.current.start();
     } catch (error) {
       const errorMessage =
@@ -194,7 +207,7 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
         description: errorMessage,
       });
     }
-  }, []);
+  }, [isPWA, isIOS]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current && state.isListening) {
