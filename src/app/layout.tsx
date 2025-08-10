@@ -102,7 +102,7 @@ export const metadata: Metadata = {
     title: "Grocery App",
   },
   other: {
-    "theme-color": "#10b981",
+    "theme-color": "transparent",
     "Cache-Control": "public, max-age=31536000, immutable",
     "X-Frame-Options": "DENY",
     "X-Content-Type-Options": "nosniff",
@@ -114,7 +114,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#10b981",
+  themeColor: "transparent",
 };
 
 export default function RootLayout({
