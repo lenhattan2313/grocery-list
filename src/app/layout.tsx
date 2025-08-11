@@ -138,14 +138,19 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              if (window.navigator.standalone) {
+              // Check for standalone mode (iOS) or display mode standalone (Android/other)
+              const isStandalone = window.navigator.standalone || 
+                window.matchMedia('(display-mode: standalone)').matches ||
+                window.matchMedia('(display-mode: window-controls-overlay)').matches;
+              
+              if (isStandalone) {
                 document.addEventListener('click', function (e) {
                   const target = e.target.closest('a');
-                  if (target && target.href && target.origin === location.origin) {
+                  if (target && target.href.startsWith(window.location.origin)) {
                     e.preventDefault();
                     window.location.href = target.href;
                   }
-                }, false);
+                });
               }
             `,
           }}
