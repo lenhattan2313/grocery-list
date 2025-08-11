@@ -3,13 +3,6 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
-// Extend Navigator interface for iOS standalone property
-declare global {
-  interface Navigator {
-    standalone?: boolean;
-  }
-}
-
 export function PWANavigationHandler() {
   const router = useRouter();
   const pathname = usePathname();

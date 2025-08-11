@@ -21,6 +21,9 @@ declare module "next-pwa" {
 
 // Web Speech API declarations
 declare global {
+  interface Navigator {
+    standalone?: boolean;
+  }
   interface Window {
     SpeechRecognition: typeof SpeechRecognition;
     webkitSpeechRecognition: typeof SpeechRecognition;
