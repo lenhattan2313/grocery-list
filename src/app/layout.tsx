@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PerformanceMonitor } from "@/components/common/performance-monitor";
 import { SplashScreen } from "@/components/common/splash-screen";
 import { PWAInstallPrompt } from "@/components/dynamic-imports";
-// import { STATIC_CRITICAL_CSS } from "@/components/common/critical-css";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
@@ -33,7 +32,7 @@ export const metadata: Metadata = {
     template: "%s | Grocery App",
   },
   description:
-    "A smart grocery shopping companion for families. Create shopping lists, manage recipes, and never forget what you need to buy. Perfect for family meal planning and grocery organization.",
+    "A smart grocery shopping companion for families. Create shopping lists, manage recipes, and never forget what you need to buy.",
   keywords: [
     "grocery app",
     "shopping list",
@@ -69,12 +68,7 @@ export const metadata: Metadata = {
       "A smart grocery shopping companion for families. Create shopping lists, manage recipes, and never forget what you need to buy.",
     siteName: "Grocery App",
     images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "Grocery App",
-      },
+      { url: "/og-image.png", width: 1200, height: 630, alt: "Grocery App" },
     ],
   },
   twitter: {
@@ -99,15 +93,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Grocery App",
-    startupImage: [
-      {
-        url: "/icon512_maskable.png",
-        media:
-          "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
-      },
-    ],
   },
   other: {
     "theme-color": "#000000",
@@ -116,7 +103,7 @@ export const metadata: Metadata = {
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "origin-when-cross-origin",
     "apple-mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
     "apple-mobile-web-app-title": "Grocery App",
     "mobile-web-app-capable": "yes",
   },
@@ -134,6 +121,16 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Required iOS PWA meta tags */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+          name="apple-mobile-web-app-status-bar-style"
+          content="black-translucent"
+        />
+        <meta name="apple-mobile-web-app-title" content="Grocery App" />
+        <link rel="apple-touch-icon" href="/icon512_maskable.png" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-hidden`}
       >
