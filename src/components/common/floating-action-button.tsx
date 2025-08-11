@@ -17,10 +17,13 @@ export function FloatingActionButton({
   return (
     <Button
       onClick={onClick}
-      className={`fixed bottom-20 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-10 pb-safe ${className}`}
+      className={`fixed bottom-20 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-10 ${className}`}
       size="icon"
       variant="third"
       aria-label={ariaLabel}
+      style={{
+        marginBottom: "env(safe-area-inset-bottom, 0px)",
+      }}
     >
       <Icon className="h-6 w-6" />
     </Button>

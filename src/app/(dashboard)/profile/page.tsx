@@ -5,7 +5,12 @@ import { ProfileDetails } from "@/components/dynamic-imports";
 // export const experimental_ppr = true;
 export default function ProfilePage() {
   return (
-    <div className="space-y-4 pb-safe">
+    <div
+      className="space-y-4"
+      style={{
+        marginBottom: "env(safe-area-inset-bottom, 0px)",
+      }}
+    >
       <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 px-4 sm:px-6 lg:px-8">
         Profile
       </h2>

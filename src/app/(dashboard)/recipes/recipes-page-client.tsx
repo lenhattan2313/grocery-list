@@ -114,7 +114,12 @@ export default function RecipesPageClient({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 overflow-auto max-h-[calc(100vh-230px)] px-4 sm:px-6 lg:px-8 pb-safe">
+        <div
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 overflow-auto max-h-[calc(100vh-230px)] px-4 sm:px-6 lg:px-8"
+          style={{
+            marginBottom: "env(safe-area-inset-bottom, 0px)",
+          }}
+        >
           {filteredRecipes.map((recipe, index) => (
             <RecipeCard
               key={recipe.id}
