@@ -88,7 +88,7 @@ export function VoiceInputButton({
     // Start recording immediately after a short delay to ensure UI is ready
     setTimeout(() => {
       startListening();
-    }, 100);
+    }, 300);
   }, [isSupported, reset, startListening]);
 
   const handleStopListening = useCallback(() => {
@@ -228,7 +228,7 @@ export function VoiceInputButton({
                 : isListening
                 ? "Listening..."
                 : shouldUseAudioRecording
-                ? "Ready to record"
+                ? "Starting recording..."
                 : "Processing..."}
             </span>
           </div>
@@ -285,7 +285,7 @@ export function VoiceInputButton({
                 ? "Recording audio..."
                 : transcript
                 ? "Audio recorded"
-                : "Ready to record"
+                : "Starting recording..."
               : transcript
               ? `(${transcript.length} chars)`
               : "(empty)"}

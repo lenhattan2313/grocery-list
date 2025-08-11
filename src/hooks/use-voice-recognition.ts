@@ -185,67 +185,86 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
 
       if (shouldUseAudioRecording) {
         // Use audio recording for iOS PWA
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-            ? "audio/webm;codecs=opus"
-            : "audio/webm",
-        });
+        try {
+          const mediaRecorder = new MediaRecorder(stream, {
+            mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+              ? "audio/webm;codecs=opus"
+              : "audio/webm",
+          });
 
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
+          mediaRecorderRef.current = mediaRecorder;
+          audioChunksRef.current = [];
 
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
-        };
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
+            }
+          };
 
-        mediaRecorder.onstart = () => {
+          mediaRecorder.onstart = () => {
+            console.log("MediaRecorder started successfully");
+            setState((prev) => ({
+              ...prev,
+              isRecording: true,
+              transcript: "Recording audio... Speak clearly.",
+              error: null,
+            }));
+          };
+
+          mediaRecorder.onstop = () => {
+            console.log("MediaRecorder stopped");
+            const audioBlob = new Blob(audioChunksRef.current, {
+              type: "audio/webm",
+            });
+            setState((prev) => ({
+              ...prev,
+              isRecording: false,
+              audioBlob,
+              transcript: `Audio recorded (${Math.round(
+                audioBlob.size / 1024
+              )}KB). Processing...`,
+            }));
+
+            // Simulate processing time
+            setTimeout(() => {
+              setState((prev) => ({
+                ...prev,
+                transcript:
+                  "Audio recorded successfully! Voice processing is limited in iOS PWA. Please use text input for now.",
+              }));
+            }, 1000);
+          };
+
+          mediaRecorder.onerror = (event) => {
+            console.error("MediaRecorder error:", event);
+            setState((prev) => ({
+              ...prev,
+              isRecording: false,
+              error: "Audio recording failed. Please try again.",
+            }));
+          };
+
+          console.log("Starting MediaRecorder...");
+          mediaRecorder.start();
+
+          // Immediately set recording state to true since we can see the orange circle
           setState((prev) => ({
             ...prev,
             isRecording: true,
             transcript: "Recording audio... Speak clearly.",
             error: null,
           }));
-        };
 
-        mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunksRef.current, {
-            type: "audio/webm",
+          toast.success("Recording audio...", {
+            description: "Speak your shopping items clearly",
           });
+        } catch (error) {
+          console.error("Failed to start MediaRecorder:", error);
           setState((prev) => ({
             ...prev,
-            isRecording: false,
-            audioBlob,
-            transcript: `Audio recorded (${Math.round(
-              audioBlob.size / 1024
-            )}KB). Processing...`,
+            error: "Failed to start audio recording. Please try again.",
           }));
-
-          // Simulate processing time
-          setTimeout(() => {
-            setState((prev) => ({
-              ...prev,
-              transcript:
-                "Audio recorded successfully! Voice processing is limited in iOS PWA. Please use text input for now.",
-            }));
-          }, 1000);
-        };
-
-        mediaRecorder.onerror = (event) => {
-          console.error("MediaRecorder error:", event);
-          setState((prev) => ({
-            ...prev,
-            isRecording: false,
-            error: "Audio recording failed. Please try again.",
-          }));
-        };
-
-        mediaRecorder.start();
-
-        toast.success("Recording audio...", {
-          description: "Speak your shopping items clearly",
-        });
+        }
       } else {
         // Use standard speech recognition
         if (!recognitionRef.current) {
