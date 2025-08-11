@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PerformanceMonitor } from "@/components/common/performance-monitor";
 import { SplashScreen } from "@/components/common/splash-screen";
 import { PWAInstallPrompt } from "@/components/dynamic-imports";
+import { PWANavigationHandler } from "@/components/common/pwa-navigation-handler";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
@@ -200,7 +201,7 @@ export default function RootLayout({
                 <DialogService />
                 <PerformanceMonitor />
                 <PWAInstallPrompt />
-                {/* <PWANavigationHandler /> */}
+                <PWANavigationHandler />
               </SplashScreen>
             </QueryProvider>
             <Toaster position="top-center" />
