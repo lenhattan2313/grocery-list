@@ -81,16 +81,15 @@ export function VoiceInputButton({
       return;
     }
 
-    // If dialog is already open and we're not recording, start recording
-    if (isOpen && !isListening && !isRecording) {
-      startListening();
-      return;
-    }
-
     // Reset any previous errors and open dialog
     reset();
     setIsOpen(true);
-  }, [isSupported, reset, isOpen, isListening, isRecording, startListening]);
+
+    // Start recording immediately after a short delay to ensure UI is ready
+    setTimeout(() => {
+      startListening();
+    }, 100);
+  }, [isSupported, reset, startListening]);
 
   const handleStopListening = useCallback(() => {
     stopListening();
@@ -254,7 +253,7 @@ export function VoiceInputButton({
             <p className="text-blue-600 dark:text-blue-400">
               {isRecording
                 ? "Recording your voice... Speak clearly into the microphone."
-                : "Audio recording mode. Click to start recording your shopping items."}
+                : "Audio recording mode. Recording will start automatically."}
             </p>
           </div>
         )}
@@ -295,14 +294,13 @@ export function VoiceInputButton({
             <p className="font-medium break-words">
               {isRecording
                 ? "Recording your voice... Please speak clearly."
-                : transcript ||
-                  "Click the microphone to start recording your shopping items."}
+                : transcript || "Starting audio recording..."}
             </p>
           ) : transcript ? (
             <p className="font-medium break-words">{transcript}</p>
           ) : (
             <p className="text-muted-foreground italic">
-              No speech detected yet...
+              Starting voice recognition...
             </p>
           )}
         </div>
