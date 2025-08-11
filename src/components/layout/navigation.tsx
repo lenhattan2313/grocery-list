@@ -2,14 +2,13 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, ChefHat, User, Mic } from "lucide-react";
+import { Home, ChefHat, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Lists", href: "/", icon: Home },
   { name: "Recipes", href: "/recipes", icon: ChefHat },
   { name: "Profile", href: "/profile", icon: User },
-  { name: "Test", href: "/test", icon: Mic },
 ];
 
 export function Navigation() {
