@@ -131,9 +131,25 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Grocery App" />
         <link rel="apple-touch-icon" href="/icon512_maskable.png" />
       </head>
+
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-hidden`}
       >
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if (window.navigator.standalone) {
+                document.addEventListener('click', function (e) {
+                  const target = e.target.closest('a');
+                  if (target && target.href && target.origin === location.origin) {
+                    e.preventDefault();
+                    window.location.href = target.href;
+                  }
+                }, false);
+              }
+            `,
+          }}
+        />
         <ThemeProvider>
           <AuthProvider>
             <QueryProvider>
