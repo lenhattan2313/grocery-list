@@ -3,6 +3,13 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 
+// Extend Navigator interface for iOS standalone property
+declare global {
+  interface Navigator {
+    standalone?: boolean;
+  }
+}
+
 export function PWANavigationHandler() {
   const router = useRouter();
   const pathname = usePathname();
@@ -10,7 +17,7 @@ export function PWANavigationHandler() {
   useEffect(() => {
     // Check if we're in standalone mode (PWA)
     const isStandalone =
-      window.navigator.standalone ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone ||
       window.matchMedia("(display-mode: standalone)").matches ||
       window.matchMedia("(display-mode: window-controls-overlay)").matches;
 

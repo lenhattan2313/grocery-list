@@ -140,7 +140,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               // Check for standalone mode (iOS) or display mode standalone (Android/other)
-              const isStandalone = window.navigator.standalone || 
+              const isStandalone = (window.navigator && 'standalone' in window.navigator ? window.navigator.standalone : false) || 
                 window.matchMedia('(display-mode: standalone)').matches ||
                 window.matchMedia('(display-mode: window-controls-overlay)').matches;
               
