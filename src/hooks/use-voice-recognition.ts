@@ -41,6 +41,8 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any | null>(null);
   const finalTranscriptRef = useRef("");
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+
   const { isPWA, isIOS } = usePWADetection();
   const iOSVersion = getIOSVersion();
 
@@ -55,7 +57,9 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
 
     if (!isSupported) return;
 
-    const recognition = new SpeechRecognition();
+    const recognition: SpeechRecognition = new SpeechRecognition();
+
+    // iOS tends to have unstable continuous mode
     if (isIOS) {
       recognition.continuous = false;
       recognition.interimResults = false;
@@ -136,13 +140,16 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
         isListening: false,
         error: errorMessage,
       }));
-      if (event.error !== "aborted") {
-        toast.error("Voice Recognition Error", { description: errorMessage });
-      }
+      toast.error("Voice Recognition Error", { description: errorMessage });
     };
 
     recognition.onend = () => {
       setState((prev) => ({ ...prev, isListening: false }));
+      // Release microphone after recognition ends
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
     };
 
     recognitionRef.current = recognition;
@@ -160,7 +167,6 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
       return;
     }
 
-    // Early block for old iOS PWAs
     if (isPWA && isIOS && iOSVersion < 17.4) {
       toast.error("Not Supported", {
         description:
@@ -169,13 +175,12 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
       return;
     }
 
-    // Must be inside a user gesture
+    // 🚨 MUST be inside user gesture — avoid async/await before start()
     navigator.mediaDevices
       .getUserMedia({ audio: true })
       .then((stream) => {
-        // Stop the stream immediately
-        stream.getTracks().forEach((track) => track.stop());
-        recognitionRef.current.start();
+        mediaStreamRef.current = stream;
+        recognitionRef.current!.start();
       })
       .catch(() => {
         toast.error("Microphone Permission Required", {
