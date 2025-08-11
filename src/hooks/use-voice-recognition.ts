@@ -50,7 +50,7 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
       setState((prev) => ({
         ...prev,
         isSupported: true,
-        transcript: "Audio recording mode (iOS PWA)",
+        transcript: "",
       }));
       return;
     }
@@ -186,7 +186,9 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
       if (shouldUseAudioRecording) {
         // Use audio recording for iOS PWA
         const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: "audio/webm;codecs=opus",
+          mimeType: MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+            ? "audio/webm;codecs=opus"
+            : "audio/webm",
         });
 
         mediaRecorderRef.current = mediaRecorder;
@@ -198,6 +200,15 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
           }
         };
 
+        mediaRecorder.onstart = () => {
+          setState((prev) => ({
+            ...prev,
+            isRecording: true,
+            transcript: "Recording audio... Speak clearly.",
+            error: null,
+          }));
+        };
+
         mediaRecorder.onstop = () => {
           const audioBlob = new Blob(audioChunksRef.current, {
             type: "audio/webm",
@@ -206,20 +217,31 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
             ...prev,
             isRecording: false,
             audioBlob,
-            transcript:
-              "Audio recorded successfully. Please use text input for now.",
+            transcript: `Audio recorded (${Math.round(
+              audioBlob.size / 1024
+            )}KB). Processing...`,
           }));
 
-          // For now, we'll just show a message that audio was recorded
-          // In a real implementation, you'd send this to a server for processing
-          toast.success("Audio recorded", {
-            description:
-              "Voice input is limited in iOS PWA. Please use text input.",
-          });
+          // Simulate processing time
+          setTimeout(() => {
+            setState((prev) => ({
+              ...prev,
+              transcript:
+                "Audio recorded successfully! Voice processing is limited in iOS PWA. Please use text input for now.",
+            }));
+          }, 1000);
+        };
+
+        mediaRecorder.onerror = (event) => {
+          console.error("MediaRecorder error:", event);
+          setState((prev) => ({
+            ...prev,
+            isRecording: false,
+            error: "Audio recording failed. Please try again.",
+          }));
         };
 
         mediaRecorder.start();
-        setState((prev) => ({ ...prev, isRecording: true }));
 
         toast.success("Recording audio...", {
           description: "Speak your shopping items clearly",

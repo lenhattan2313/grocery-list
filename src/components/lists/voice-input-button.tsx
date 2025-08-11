@@ -234,8 +234,12 @@ export function VoiceInputButton({
             <span className="text-sm font-medium">
               {shouldUseAudioRecording && isRecording
                 ? "Recording audio..."
+                : shouldUseAudioRecording && !isRecording && transcript
+                ? "Audio recorded"
                 : isListening
                 ? "Listening..."
+                : shouldUseAudioRecording
+                ? "Ready to record"
                 : "Processing..."}
             </span>
           </div>
@@ -258,26 +262,30 @@ export function VoiceInputButton({
               📱 iOS PWA Mode:
             </p>
             <p className="text-blue-600 dark:text-blue-400">
-              Voice recognition is limited in iOS PWA. Audio recording is
-              available for future processing.
+              {isRecording
+                ? "Recording your voice... Speak clearly into the microphone."
+                : "Audio recording mode. Click to start recording your shopping items."}
             </p>
           </div>
         )}
 
         {/* Error Display */}
-        {!isListening && !isRecording && transcript.length === 0 && (
-          <div className="mb-3 p-2 bg-red-50 dark:bg-red-950/20 rounded text-xs">
-            <p className="text-red-700 dark:text-red-300 mb-2">
-              💡 Tips to fix voice recognition:
-            </p>
-            <ul className="text-red-600 dark:text-red-400 space-y-1">
-              <li>• Allow microphone access when prompted</li>
-              <li>• Speak clearly and at normal volume</li>
-              <li>• Try refreshing the page if issues persist</li>
-              <li>• Use Chrome or Safari for best compatibility</li>
-            </ul>
-          </div>
-        )}
+        {!isListening &&
+          !isRecording &&
+          transcript.length === 0 &&
+          !shouldUseAudioRecording && (
+            <div className="mb-3 p-2 bg-red-50 dark:bg-red-950/20 rounded text-xs">
+              <p className="text-red-700 dark:text-red-300 mb-2">
+                💡 Tips to fix voice recognition:
+              </p>
+              <ul className="text-red-600 dark:text-red-400 space-y-1">
+                <li>• Allow microphone access when prompted</li>
+                <li>• Speak clearly and at normal volume</li>
+                <li>• Try refreshing the page if issues persist</li>
+                <li>• Use Chrome or Safari for best compatibility</li>
+              </ul>
+            </div>
+          )}
 
         {/* Transcript */}
         <div className="mb-3 p-2 bg-muted rounded text-sm">
@@ -286,7 +294,9 @@ export function VoiceInputButton({
             {shouldUseAudioRecording
               ? isRecording
                 ? "Recording audio..."
-                : "Audio recorded successfully"
+                : transcript
+                ? "Audio recorded"
+                : "Ready to record"
               : transcript
               ? `(${transcript.length} chars)`
               : "(empty)"}
@@ -295,7 +305,8 @@ export function VoiceInputButton({
             <p className="font-medium break-words">
               {isRecording
                 ? "Recording your voice... Please speak clearly."
-                : "Audio recorded. Voice processing is limited in iOS PWA."}
+                : transcript ||
+                  "Click the microphone to start recording your shopping items."}
             </p>
           ) : transcript ? (
             <p className="font-medium break-words">{transcript}</p>
