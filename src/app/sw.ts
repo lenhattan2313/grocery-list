@@ -36,6 +36,17 @@ const serwist = new Serwist({
 
 serwist.addEventListeners();
 
+self.addEventListener("fetch", (event) => {
+  // Only handle navigation requests
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      caches.match("/").then((cachedResponse) => {
+        return cachedResponse || fetch(event.request);
+      })
+    );
+  }
+});
+
 // Add push notification handling
 self.addEventListener("push", function (event) {
   if (event.data) {
