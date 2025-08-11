@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PerformanceMonitor } from "@/components/common/performance-monitor";
 import { SplashScreen } from "@/components/common/splash-screen";
 import { PWAInstallPrompt } from "@/components/dynamic-imports";
-import { PWANavigationHandler } from "@/components/common/pwa-navigation-handler";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
@@ -136,6 +135,63 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased overflow-hidden`}
       >
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Check for standalone mode (iOS) or display mode standalone (Android/other)
+              const isStandalone = (window.navigator && 'standalone' in window.navigator ? window.navigator.standalone : false) || 
+                window.matchMedia('(display-mode: standalone)').matches ||
+                window.matchMedia('(display-mode: window-controls-overlay)').matches;
+              
+              if (isStandalone) {
+                // Store the current path to detect navigation changes
+                let currentPath = window.location.pathname;
+                
+                document.addEventListener('click', function (e) {
+                  const target = e.target.closest('a');
+                  
+                  // Only handle internal links
+                  if (target && 
+                      target.href && 
+                      target.href.startsWith(window.location.origin) &&
+                      !target.href.includes('#') && // Skip anchor links
+                      !target.hasAttribute('download') && // Skip download links
+                      !target.hasAttribute('target') && // Skip external links
+                      !target.classList.contains('external-link')) {
+                    
+                    e.preventDefault();
+                    
+                    // Use history.pushState for client-side navigation
+                    const url = new URL(target.href);
+                    const path = url.pathname + url.search + url.hash;
+                    
+                    // Update the URL without full page reload
+                    window.history.pushState({}, '', path);
+                    
+                    // Trigger a custom event to notify the app of navigation
+                    window.dispatchEvent(new CustomEvent('pwa-navigation', {
+                      detail: { path: url.pathname }
+                    }));
+                    
+                    // Update current path
+                    currentPath = url.pathname;
+                  }
+                });
+                
+                // Handle browser back/forward buttons
+                window.addEventListener('popstate', function() {
+                  const newPath = window.location.pathname;
+                  if (newPath !== currentPath) {
+                    window.dispatchEvent(new CustomEvent('pwa-navigation', {
+                      detail: { path: newPath }
+                    }));
+                    currentPath = newPath;
+                  }
+                });
+              }
+            `,
+          }}
+        />
         <ThemeProvider>
           <AuthProvider>
             <QueryProvider>
@@ -144,7 +200,7 @@ export default function RootLayout({
                 <DialogService />
                 <PerformanceMonitor />
                 <PWAInstallPrompt />
-                <PWANavigationHandler />
+                {/* <PWANavigationHandler /> */}
               </SplashScreen>
             </QueryProvider>
             <Toaster position="top-center" />
