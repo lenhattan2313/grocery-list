@@ -38,6 +38,8 @@ export function VoiceInputButton({
     isListening,
     isSupported,
     transcript,
+    isRecording,
+    shouldUseAudioRecording,
     startListening,
     stopListening,
     reset,
@@ -190,16 +192,30 @@ export function VoiceInputButton({
           variant="outline"
           size="icon"
           onClick={handleStartListening}
-          disabled={disabled || isListening}
+          disabled={disabled || isListening || isRecording}
           className={cn(
             "transition-all duration-200 animate-pulse-once",
-            isListening && "bg-primary text-primary-foreground",
+            (isListening || isRecording) &&
+              "bg-primary text-primary-foreground",
             className
           )}
-          title="Add items by voice"
-          aria-label="Add items by voice"
+          title={
+            shouldUseAudioRecording
+              ? "Record audio (iOS PWA)"
+              : "Add items by voice"
+          }
+          aria-label={
+            shouldUseAudioRecording
+              ? "Record audio (iOS PWA)"
+              : "Add items by voice"
+          }
         >
-          <Mic className={cn("h-4 w-4", isListening && "animate-pulse")} />
+          <Mic
+            className={cn(
+              "h-4 w-4",
+              (isListening || isRecording) && "animate-pulse"
+            )}
+          />
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -212,11 +228,15 @@ export function VoiceInputButton({
             <div
               className={cn(
                 "w-3 h-3 rounded-full animate-pulse",
-                isListening ? "bg-red-500" : "bg-gray-400"
+                isListening || isRecording ? "bg-red-500" : "bg-gray-400"
               )}
             />
             <span className="text-sm font-medium">
-              {isListening ? "Listening..." : "Processing..."}
+              {shouldUseAudioRecording && isRecording
+                ? "Recording audio..."
+                : isListening
+                ? "Listening..."
+                : "Processing..."}
             </span>
           </div>
           <Button
@@ -231,8 +251,21 @@ export function VoiceInputButton({
           </Button>
         </div>
 
+        {/* iOS PWA Info */}
+        {shouldUseAudioRecording && (
+          <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded text-xs">
+            <p className="text-blue-700 dark:text-blue-300 mb-2">
+              📱 iOS PWA Mode:
+            </p>
+            <p className="text-blue-600 dark:text-blue-400">
+              Voice recognition is limited in iOS PWA. Audio recording is
+              available for future processing.
+            </p>
+          </div>
+        )}
+
         {/* Error Display */}
-        {!isListening && transcript.length === 0 && (
+        {!isListening && !isRecording && transcript.length === 0 && (
           <div className="mb-3 p-2 bg-red-50 dark:bg-red-950/20 rounded text-xs">
             <p className="text-red-700 dark:text-red-300 mb-2">
               💡 Tips to fix voice recognition:
@@ -249,10 +282,22 @@ export function VoiceInputButton({
         {/* Transcript */}
         <div className="mb-3 p-2 bg-muted rounded text-sm">
           <p className="text-muted-foreground text-xs mb-1">
-            Transcript:{" "}
-            {transcript ? `(${transcript.length} chars)` : "(empty)"}
+            {shouldUseAudioRecording ? "Status: " : "Transcript: "}
+            {shouldUseAudioRecording
+              ? isRecording
+                ? "Recording audio..."
+                : "Audio recorded successfully"
+              : transcript
+              ? `(${transcript.length} chars)`
+              : "(empty)"}
           </p>
-          {transcript ? (
+          {shouldUseAudioRecording ? (
+            <p className="font-medium break-words">
+              {isRecording
+                ? "Recording your voice... Please speak clearly."
+                : "Audio recorded. Voice processing is limited in iOS PWA."}
+            </p>
+          ) : transcript ? (
             <p className="font-medium break-words">{transcript}</p>
           ) : (
             <p className="text-muted-foreground italic">

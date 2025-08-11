@@ -10,6 +10,8 @@ interface VoiceRecognitionState {
   transcript: string;
   confidence: number;
   error: string | null;
+  isRecording: boolean;
+  audioBlob: Blob | null;
 }
 
 interface VoiceRecognitionOptions {
@@ -19,16 +21,6 @@ interface VoiceRecognitionOptions {
   maxAlternatives?: number;
 }
 
-function getIOSVersion(): number {
-  if (/iP(hone|od|ad)/.test(navigator.platform)) {
-    const v = navigator.appVersion.match(/OS (\d+)_(\d+)_?(\d+)?/);
-    return parseFloat(
-      `${parseInt(v?.[1] || "0", 10)}.${parseInt(v?.[2] || "0", 10)}`
-    );
-  }
-  return 0;
-}
-
 export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
   const [state, setState] = useState<VoiceRecognitionState>({
     isListening: false,
@@ -36,28 +28,47 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
     transcript: "",
     confidence: 0,
     error: null,
+    isRecording: false,
+    audioBlob: null,
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const finalTranscriptRef = useRef("");
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
   const { isPWA, isIOS } = usePWADetection();
-  const iOSVersion = getIOSVersion();
+
+  // Check if we should use audio recording instead of speech recognition
+  const shouldUseAudioRecording = isPWA && isIOS;
 
   useEffect(() => {
+    // For iOS PWA, we'll use audio recording instead of speech recognition
+    if (shouldUseAudioRecording) {
+      setState((prev) => ({
+        ...prev,
+        isSupported: true,
+        transcript: "Audio recording mode (iOS PWA)",
+      }));
+      return;
+    }
+
+    // Standard speech recognition for other platforms
     const SpeechRecognition =
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).SpeechRecognition ||
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).webkitSpeechRecognition;
+
     const isSupported = !!SpeechRecognition;
     setState((prev) => ({ ...prev, isSupported }));
 
     if (!isSupported) return;
 
-    const recognition: SpeechRecognition = new SpeechRecognition();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognition = new (SpeechRecognition as any)();
 
     // iOS tends to have unstable continuous mode
     if (isIOS) {
@@ -112,12 +123,11 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
           errorMessage = "No speech detected. Please try again.";
           break;
         case "audio-capture":
-          errorMessage =
-            "Audio capture failed. Please check your microphone permissions.";
+          errorMessage = "Audio capture failed. Please check your microphone.";
           break;
         case "not-allowed":
           errorMessage =
-            "Microphone access denied. Please allow microphone access in your browser settings.";
+            "Microphone access denied. Please allow microphone access.";
           break;
         case "network":
           errorMessage = "Network error occurred.";
@@ -126,7 +136,7 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
           errorMessage = "Speech recognition service not allowed.";
           break;
         case "aborted":
-          errorMessage = "Voice recognition was interrupted. Please try again.";
+          errorMessage = "Voice recognition was interrupted.";
           break;
         case "bad-grammar":
           errorMessage = "Speech recognition grammar error.";
@@ -140,12 +150,10 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
         isListening: false,
         error: errorMessage,
       }));
-      toast.error("Voice Recognition Error", { description: errorMessage });
     };
 
     recognition.onend = () => {
       setState((prev) => ({ ...prev, isListening: false }));
-      // Release microphone after recognition ends
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
         mediaStreamRef.current = null;
@@ -159,42 +167,91 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
     options.lang,
     options.maxAlternatives,
     isIOS,
+    shouldUseAudioRecording,
   ]);
 
-  const startListening = useCallback(() => {
-    if (!recognitionRef.current) {
-      toast.error("Speech recognition not supported");
-      return;
-    }
-
-    if (isPWA && isIOS && iOSVersion < 17.4) {
-      toast.error("Not Supported", {
-        description:
-          "Microphone is not available in PWAs on iOS before version 17.4. Please open in Safari.",
+  const startListening = useCallback(async () => {
+    try {
+      // Request microphone permission first
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
       });
-      return;
-    }
 
-    // 🚨 MUST be inside user gesture — avoid async/await before start()
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then((stream) => {
-        mediaStreamRef.current = stream;
-        recognitionRef.current!.start();
-      })
-      .catch(() => {
-        toast.error("Microphone Permission Required", {
-          description:
-            "Please allow microphone access in your device settings to use voice input.",
+      mediaStreamRef.current = stream;
+
+      if (shouldUseAudioRecording) {
+        // Use audio recording for iOS PWA
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "audio/webm;codecs=opus",
         });
+
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunksRef.current, {
+            type: "audio/webm",
+          });
+          setState((prev) => ({
+            ...prev,
+            isRecording: false,
+            audioBlob,
+            transcript:
+              "Audio recorded successfully. Please use text input for now.",
+          }));
+
+          // For now, we'll just show a message that audio was recorded
+          // In a real implementation, you'd send this to a server for processing
+          toast.success("Audio recorded", {
+            description:
+              "Voice input is limited in iOS PWA. Please use text input.",
+          });
+        };
+
+        mediaRecorder.start();
+        setState((prev) => ({ ...prev, isRecording: true }));
+
+        toast.success("Recording audio...", {
+          description: "Speak your shopping items clearly",
+        });
+      } else {
+        // Use standard speech recognition
+        if (!recognitionRef.current) {
+          toast.error("Speech recognition not available");
+          return;
+        }
+
+        recognitionRef.current.start();
+      }
+    } catch (error) {
+      console.error("Microphone access error:", error);
+      toast.error("Microphone access required", {
+        description: "Please allow microphone access to use voice input",
       });
-  }, [isPWA, isIOS, iOSVersion]);
+    }
+  }, [shouldUseAudioRecording]);
 
   const stopListening = useCallback(() => {
-    if (recognitionRef.current && state.isListening) {
+    if (
+      shouldUseAudioRecording &&
+      mediaRecorderRef.current &&
+      state.isRecording
+    ) {
+      mediaRecorderRef.current.stop();
+    } else if (recognitionRef.current && state.isListening) {
       recognitionRef.current.stop();
     }
-  }, [state.isListening]);
+  }, [shouldUseAudioRecording, state.isRecording, state.isListening]);
 
   const reset = useCallback(() => {
     setState((prev) => ({
@@ -202,13 +259,16 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
       transcript: "",
       confidence: 0,
       error: null,
+      audioBlob: null,
     }));
     finalTranscriptRef.current = "";
+    audioChunksRef.current = [];
   }, []);
 
   const clearTranscript = useCallback(() => {
-    setState((prev) => ({ ...prev, transcript: "" }));
+    setState((prev) => ({ ...prev, transcript: "", audioBlob: null }));
     finalTranscriptRef.current = "";
+    audioChunksRef.current = [];
   }, []);
 
   return {
@@ -217,5 +277,6 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
     stopListening,
     reset,
     clearTranscript,
+    shouldUseAudioRecording,
   };
 }
