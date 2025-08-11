@@ -28,7 +28,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Grocery App - Smart Shopping Lists & Recipes",
+    default: "Grocery App",
     template: "%s | Grocery App",
   },
   description:
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "/",
-    title: "Grocery App - Smart Shopping Lists & Recipes",
+    title: "Grocery App",
     description:
       "A smart grocery shopping companion for families. Create shopping lists, manage recipes, and never forget what you need to buy.",
     siteName: "Grocery App",
@@ -72,13 +72,13 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Grocery App - Smart Shopping Lists & Recipes",
+        alt: "Grocery App",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Grocery App - Smart Shopping Lists & Recipes",
+    title: "Grocery App",
     description:
       "A smart grocery shopping companion for families. Create shopping lists, manage recipes, and never forget what you need to buy.",
     images: ["/og-image.png"],
