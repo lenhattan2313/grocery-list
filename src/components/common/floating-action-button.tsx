@@ -17,7 +17,7 @@ export function FloatingActionButton({
   return (
     <Button
       onClick={onClick}
-      className={`fixed bottom-20 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-10 ${className}`}
+      className={`fixed bottom-20 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-10 pb-safe ${className}`}
       size="icon"
       variant="third"
       aria-label={ariaLabel}

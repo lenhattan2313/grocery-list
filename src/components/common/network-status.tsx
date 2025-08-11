@@ -51,7 +51,7 @@ export function NetworkStatus() {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 z-50">
+    <div className="fixed bottom-20 left-4 z-50 pb-safe">
       <div className="flex items-center gap-2 bg-white/90 backdrop-blur-sm border rounded-lg px-3 py-2 shadow-lg text-gray-800 dark:text-gray-100 dark:bg-input/30">
         {isOnline ? (
           <>

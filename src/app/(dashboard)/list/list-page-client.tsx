@@ -99,7 +99,7 @@ export function ListsPageClient({
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto max-h-[calc(100vh-230px)] px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto max-h-[calc(100vh-230px)] px-4 sm:px-6 lg:px-8 pb-safe">
           {filteredLists.map((list, index) => (
             <ShoppingListCard
               key={list.id}
