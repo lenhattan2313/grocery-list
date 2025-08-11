@@ -44,6 +44,12 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
   // Check if we should use audio recording instead of speech recognition
   const shouldUseAudioRecording = isPWA && isIOS;
 
+  console.log("Voice recognition debug:", {
+    isPWA,
+    isIOS,
+    shouldUseAudioRecording,
+  });
+
   useEffect(() => {
     // For iOS PWA, we'll use audio recording instead of speech recognition
     if (shouldUseAudioRecording) {
@@ -245,15 +251,16 @@ export function useVoiceRecognition(options: VoiceRecognitionOptions = {}) {
           };
 
           console.log("Starting MediaRecorder...");
-          mediaRecorder.start();
 
-          // Immediately set recording state to true since we can see the orange circle
+          // Set recording state immediately when we start
           setState((prev) => ({
             ...prev,
             isRecording: true,
             transcript: "Recording audio... Speak clearly.",
             error: null,
           }));
+
+          mediaRecorder.start();
 
           toast.success("Recording audio...", {
             description: "Speak your shopping items clearly",

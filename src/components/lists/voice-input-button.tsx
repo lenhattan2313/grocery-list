@@ -244,6 +244,16 @@ export function VoiceInputButton({
           </Button>
         </div>
 
+        {/* Debug Info (temporary) */}
+        {shouldUseAudioRecording && (
+          <div className="mb-3 p-2 bg-gray-50 dark:bg-gray-950/20 rounded text-xs">
+            <p className="text-gray-700 dark:text-gray-300 mb-1">
+              Debug: isRecording={isRecording.toString()}, isListening=
+              {isListening.toString()}, transcript={transcript ? "yes" : "no"}
+            </p>
+          </div>
+        )}
+
         {/* iOS PWA Info */}
         {shouldUseAudioRecording && (
           <div className="mb-3 p-2 bg-blue-50 dark:bg-blue-950/20 rounded text-xs">
