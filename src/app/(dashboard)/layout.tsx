@@ -29,7 +29,12 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-background overflow-x-hidden">
       {/* Header */}
-      <header className="bg-white dark:bg-background shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <header
+        className="bg-white dark:bg-background shadow-sm border-b border-gray-200 dark:border-gray-700"
+        style={{
+          paddingTop: "env(safe-area-inset-top, 0px)",
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Suspense

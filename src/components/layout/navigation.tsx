@@ -15,7 +15,12 @@ export function Navigation() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-background border-t border-border dark:border-gray-700">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-background border-t border-border dark:border-gray-700"
+      style={{
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+      }}
+    >
       <div className="flex justify-around md:justify-center md:space-x-8 md:mb-8">
         {navigation.map((item) => {
           const isActive = pathname === item.href;

@@ -258,7 +258,6 @@ export function VoiceInputButton({
                     <ul className="list-disc list-inside space-y-1 ml-2">
                       <li>Use the text input field to add items manually</li>
                       <li>Open the app in Safari browser for voice input</li>
-                      <li>Use the camera to scan receipts or barcodes</li>
                     </ul>
                   </div>
                 </div>
