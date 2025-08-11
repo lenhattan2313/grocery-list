@@ -152,3 +152,14 @@ export const ImageToTextButton = dynamic(
     ssr: false,
   }
 );
+
+// PWA Install Prompt
+export const PWAInstallPrompt = dynamic(
+  () =>
+    import("@/components/common/pwa-install-prompt").then((mod) => ({
+      default: mod.PWAInstallPrompt,
+    })),
+  {
+    ssr: false,
+  }
+);

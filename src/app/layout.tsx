@@ -4,6 +4,7 @@ import { AuthProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PerformanceMonitor } from "@/components/common/performance-monitor";
 import { SplashScreen } from "@/components/common/splash-screen";
+import { PWAInstallPrompt } from "@/components/dynamic-imports";
 // import { STATIC_CRITICAL_CSS } from "@/components/common/critical-css";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -143,6 +144,7 @@ export default function RootLayout({
                 {children}
                 <DialogService />
                 <PerformanceMonitor />
+                <PWAInstallPrompt />
               </SplashScreen>
             </QueryProvider>
             <Toaster position="top-center" />
