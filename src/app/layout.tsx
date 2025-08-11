@@ -100,6 +100,13 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "Grocery App",
+    startupImage: [
+      {
+        url: "/icon512_maskable.png",
+        media:
+          "(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)",
+      },
+    ],
   },
   other: {
     "theme-color": "#000000",
@@ -107,6 +114,10 @@ export const metadata: Metadata = {
     "X-Frame-Options": "DENY",
     "X-Content-Type-Options": "nosniff",
     "Referrer-Policy": "origin-when-cross-origin",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "Grocery App",
+    "mobile-web-app-capable": "yes",
   },
 };
 
