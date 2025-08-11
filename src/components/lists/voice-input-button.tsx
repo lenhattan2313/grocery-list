@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useVoiceRecognition } from "@/hooks/use-voice-recognition";
-import { usePWADetection } from "@/hooks/use-pwa-detection";
 import { VoiceParser } from "@/lib/voice-parser";
 import { toast } from "sonner";
 
@@ -51,7 +50,6 @@ export function VoiceInputButton({
   });
 
   const voiceParser = useMemo(() => new VoiceParser(), []);
-  const { isPWA, isIOS } = usePWADetection();
 
   // Auto-parse when transcript changes
   useEffect(() => {
@@ -83,32 +81,16 @@ export function VoiceInputButton({
       return;
     }
 
-    // Check if we're in iOS PWA mode and handle permissions
-    if (isIOS && isPWA) {
-      try {
-        // Explicitly request microphone permission for iOS PWA
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch {
-        toast.error("Microphone Permission Required", {
-          description:
-            "Please allow microphone access in your device settings to use voice input.",
-        });
-        return;
-      }
+    // If dialog is already open and we're not recording, start recording
+    if (isOpen && !isListening && !isRecording) {
+      startListening();
+      return;
     }
 
-    // Reset any previous errors
+    // Reset any previous errors and open dialog
     reset();
     setIsOpen(true);
-
-    // Small delay to ensure UI is ready
-    setTimeout(() => {
-      startListening();
-      toast.success("Listening...", {
-        description: "Speak your shopping items clearly",
-      });
-    }, 100);
-  }, [isSupported, reset, startListening, isIOS, isPWA]);
+  }, [isSupported, reset, isOpen, isListening, isRecording, startListening]);
 
   const handleStopListening = useCallback(() => {
     stopListening();
@@ -200,14 +182,22 @@ export function VoiceInputButton({
             className
           )}
           title={
-            shouldUseAudioRecording
-              ? "Record audio (iOS PWA)"
-              : "Add items by voice"
+            isRecording
+              ? "Recording audio... Click to stop"
+              : isListening
+              ? "Listening... Click to stop"
+              : shouldUseAudioRecording
+              ? "Start recording audio"
+              : "Start voice recognition"
           }
           aria-label={
-            shouldUseAudioRecording
-              ? "Record audio (iOS PWA)"
-              : "Add items by voice"
+            isRecording
+              ? "Recording audio... Click to stop"
+              : isListening
+              ? "Listening... Click to stop"
+              : shouldUseAudioRecording
+              ? "Start recording audio"
+              : "Start voice recognition"
           }
         >
           <Mic
@@ -362,19 +352,29 @@ export function VoiceInputButton({
 
         {/* Actions */}
         <div className="flex gap-2">
-          <Button
-            onClick={handleStopListening}
-            className="flex-1"
-            disabled={parsedItems.length === 0}
-            aria-label={`Add all ${parsedItems.length} items to list`}
-          >
-            <Volume2 className="h-4 w-4 mr-2" />
-            Add All ({parsedItems.length})
-          </Button>
+          {isListening || isRecording ? (
+            <Button
+              onClick={handleStopListening}
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white"
+              aria-label="Stop recording"
+            >
+              <Volume2 className="h-4 w-4 mr-2" />
+              Stop Recording
+            </Button>
+          ) : (
+            <Button
+              onClick={handleStopListening}
+              className="flex-1"
+              disabled={parsedItems.length === 0}
+              aria-label={`Add all ${parsedItems.length} items to list`}
+            >
+              <Volume2 className="h-4 w-4 mr-2" />
+              Add All ({parsedItems.length})
+            </Button>
+          )}
           <Button
             variant="outline"
             onClick={handleCancel}
-            className="flex-1"
             aria-label="Cancel voice input"
           >
             Cancel
