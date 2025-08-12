@@ -24,8 +24,7 @@ import { IngredientList } from "./ingredient-list";
 import { CreateRecipeForm } from "@/types";
 import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
 import { ImageToTextButton } from "@/components/recipes/image-to-text-button";
-import Image from "next/image";
-import ChatGptLogo from "@/assets/ChatGPT_logo.png";
+import { AnimatedChatGPTButton } from "@/components/recipes/animated-chatgpt-button";
 import { useGenerateRecipeMutation } from "@/hooks/use-generate-recipe-mutation";
 import { useMobileKeyboard } from "@/hooks/use-mobile-keyboard";
 import {
@@ -201,15 +200,9 @@ export function RecipeFormDrawer({
               </span>
             )}
           </div>
-          <Button
-            variant="outline"
-            size="icon"
+          <AnimatedChatGPTButton
             onClick={() => setShowAIPrompt(!showAIPrompt)}
-            aria-label="Generate with AI"
-            className="rounded-full animate-pulse-once"
-          >
-            <Image src={ChatGptLogo} alt="ChatGPT logo" className="h-4 w-4" />
-          </Button>
+          />
         </div>
       </DrawerHeader>
       <div className="flex-1 overflow-y-auto p-4 space-y-4 pb-20">

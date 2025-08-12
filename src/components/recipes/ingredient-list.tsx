@@ -30,11 +30,18 @@ export function IngredientList({
 }: IngredientListProps) {
   // Ref to track the last added input for focusing
   const lastAddedInputRef = useRef<HTMLInputElement>(null);
+  // Track if we should focus (only when adding new ingredients)
+  const shouldFocusRef = useRef(false);
 
   // Focus on the last added input when ingredients length changes
   useEffect(() => {
-    if (lastAddedInputRef.current && ingredients.length > 0) {
+    if (
+      lastAddedInputRef.current &&
+      ingredients.length > 0 &&
+      shouldFocusRef.current
+    ) {
       lastAddedInputRef.current.focus();
+      shouldFocusRef.current = false; // Reset the flag
     }
   }, [ingredients.length]);
 
@@ -53,6 +60,7 @@ export function IngredientList({
 
   const handleAddIngredient = () => {
     const newIngredient = { name: "", quantity: "", unit: "g" };
+    shouldFocusRef.current = true; // Set flag to focus on next render
     onChange([...ingredients, newIngredient]);
   };
 
@@ -124,6 +132,12 @@ export function IngredientList({
           className="w-fit"
           onClick={handleAddIngredient}
           aria-label="Add Ingredient"
+          disabled={
+            ingredients.length > 0 &&
+            (!ingredients[ingredients.length - 1]?.name?.trim() ||
+              !ingredients[ingredients.length - 1]?.quantity?.trim() ||
+              !ingredients[ingredients.length - 1]?.unit?.trim())
+          }
         >
           <Plus className="h-4 w-4" />
           Add Ingredient
