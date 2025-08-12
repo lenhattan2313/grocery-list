@@ -17,7 +17,8 @@ import { useRealtimeLists } from "@/hooks/use-realtime-lists";
 import { NetworkStatus } from "@/components/common/network-status";
 
 import { dialogService } from "@/stores/dialog-store";
-import { useState, useCallback, useMemo } from "react";
+import { drawerService } from "@/stores/drawer-store";
+import { useCallback, useMemo } from "react";
 import { ShoppingListWithItems } from "@/types/list";
 
 export function ListsPageClient({
@@ -32,7 +33,6 @@ export function ListsPageClient({
     isError,
   } = useOfflineListsQuery();
   const [searchQuery] = useSearchParamState("q", "");
-  const [viewingListId, setViewingListId] = useState<string | null>(null);
 
   useIndexedDBSync();
 
@@ -40,9 +40,19 @@ export function ListsPageClient({
     useRealtimeLists();
     return null;
   };
-  const handleViewList = useCallback((listId: string) => {
-    setViewingListId(listId);
-  }, []);
+  const handleViewList = useCallback(
+    (listId: string) => {
+      const list = lists.find((l) => l.id === listId);
+      if (list) {
+        drawerService.showDrawer({
+          id: `list-details-${listId}`,
+          type: "list-details",
+          content: <ListDetailsDrawer list={list} />,
+        });
+      }
+    },
+    [lists]
+  );
 
   const handleAddList = useCallback(() => {
     dialogService.showDialog({
@@ -60,11 +70,6 @@ export function ListsPageClient({
       ),
     [lists, searchQuery]
   );
-
-  // Find the selected list from the filtered lists
-  const selectedList = viewingListId
-    ? filteredLists.find((list) => list.id === viewingListId) || null
-    : null;
 
   if (isError && error) {
     return (
@@ -100,7 +105,7 @@ export function ListsPageClient({
         </div>
       ) : (
         <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto max-h-[calc(100vh-230px)] px-4 sm:px-6 lg:px-8"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-auto max-h-[calc(100vh-230px)] px-4 sm:px-6 lg:px-8 pb-12"
           style={{
             marginBottom: "env(safe-area-inset-bottom, 0px)",
           }}
@@ -122,15 +127,6 @@ export function ListsPageClient({
         icon={Plus}
         ariaLabel="Add list"
       />
-
-      {/* List Details Drawer */}
-      {selectedList && (
-        <ListDetailsDrawer
-          list={selectedList}
-          open={!!viewingListId}
-          onOpenChange={(open) => !open && setViewingListId(null)}
-        />
-      )}
 
       {/* Network Status */}
       <NetworkStatus />

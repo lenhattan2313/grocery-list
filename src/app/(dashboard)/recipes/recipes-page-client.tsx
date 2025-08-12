@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { RecipeCard } from "@/components/recipes/recipe-card";
-import { RecipeFormDrawer } from "@/components/dynamic-imports";
-import { RecipeViewDrawer } from "@/components/dynamic-imports";
 import { showRecipeToListDialog } from "@/components/recipes/recipe-to-list-dialog";
 import { CreateRecipeForm, RecipeIngredient } from "@/types";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
 import { PageHeader } from "@/components/common/page-header";
 import { dialogService } from "@/stores/dialog-store";
+import { drawerService } from "@/stores/drawer-store";
+import { RecipeFormDrawer } from "@/components/dynamic-imports";
+import { RecipeViewDrawer } from "@/components/dynamic-imports";
 import { PageHeaderSearch } from "@/components/common/page-header-search";
 import {
   useRecipesQuery,
@@ -26,12 +27,6 @@ interface RecipesPageClientProps {
 export default function RecipesPageClient({
   initialRecipes,
 }: RecipesPageClientProps) {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isViewDrawerOpen, setIsViewDrawerOpen] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] =
-    useState<RecipeWithIngredients | null>(null);
-  const [viewingRecipe, setViewingRecipe] =
-    useState<RecipeWithIngredients | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const {
@@ -51,9 +46,10 @@ export default function RecipesPageClient({
     await createRecipeMutation.mutateAsync(data);
   };
 
-  const handleEditRecipe = async (data: CreateRecipeForm) => {
-    if (!selectedRecipe) return;
-    await updateRecipeMutation.mutateAsync({ id: selectedRecipe.id, data });
+  const createEditRecipeHandler = (recipeId: string) => {
+    return async (data: CreateRecipeForm) => {
+      await updateRecipeMutation.mutateAsync({ id: recipeId, data });
+    };
   };
 
   const handleOpenDeleteDialog = (recipe: RecipeWithIngredients) => {
@@ -115,7 +111,7 @@ export default function RecipesPageClient({
         </div>
       ) : (
         <div
-          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 overflow-auto max-h-[calc(100vh-230px)] px-4 sm:px-6 lg:px-8"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 overflow-auto max-h-[calc(100vh-230px)] px-4 sm:px-6 lg:px-8 pb-12"
           style={{
             marginBottom: "env(safe-area-inset-bottom, 0px)",
           }}
@@ -126,14 +122,31 @@ export default function RecipesPageClient({
               recipe={recipe}
               isPriority={index < 3}
               onEdit={(recipe) => {
-                setSelectedRecipe(recipe);
-                setIsDrawerOpen(true);
+                drawerService.showDrawer({
+                  id: `recipe-form-edit-${recipe.id}`,
+                  type: "recipe-form",
+                  content: (
+                    <RecipeFormDrawer
+                      mode="edit"
+                      recipe={recipe}
+                      onSubmit={createEditRecipeHandler(recipe.id)}
+                    />
+                  ),
+                });
               }}
               onDelete={handleOpenDeleteDialog}
               onAddToList={handleAddToList}
               onView={(recipe) => {
-                setViewingRecipe(recipe);
-                setIsViewDrawerOpen(true);
+                drawerService.showDrawer({
+                  id: `recipe-view-${recipe.id}`,
+                  type: "recipe-view",
+                  content: (
+                    <RecipeViewDrawer
+                      recipe={recipe}
+                      onAddToList={handleAddToList}
+                    />
+                  ),
+                });
               }}
             />
           ))}
@@ -142,32 +155,14 @@ export default function RecipesPageClient({
 
       <FloatingActionButton
         onClick={() => {
-          setSelectedRecipe(null);
-          setIsDrawerOpen(true);
+          drawerService.showDrawer({
+            id: "recipe-form-add",
+            type: "recipe-form",
+            content: <RecipeFormDrawer mode="add" onSubmit={handleAddRecipe} />,
+          });
         }}
         icon={Plus}
         ariaLabel="Add recipe"
-      />
-
-      <RecipeFormDrawer
-        mode={selectedRecipe ? "edit" : "add"}
-        recipe={selectedRecipe || undefined}
-        open={isDrawerOpen}
-        onOpenChange={(open: boolean) => {
-          setIsDrawerOpen(open);
-          if (!open) setSelectedRecipe(null);
-        }}
-        onSubmit={selectedRecipe ? handleEditRecipe : handleAddRecipe}
-      />
-
-      <RecipeViewDrawer
-        recipe={viewingRecipe || undefined}
-        open={isViewDrawerOpen}
-        onOpenChange={(open: boolean) => {
-          setIsViewDrawerOpen(open);
-          if (!open) setViewingRecipe(null);
-        }}
-        onAddToList={handleAddToList}
       />
     </div>
   );

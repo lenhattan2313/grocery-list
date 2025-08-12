@@ -86,6 +86,7 @@ export function RecipeCard({
             size="icon"
             onClick={() => onEdit(recipe)}
             aria-label="Edit recipe"
+            
           >
             <Pencil className="h-4 w-4" />
           </Button>

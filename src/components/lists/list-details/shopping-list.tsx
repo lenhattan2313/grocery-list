@@ -38,20 +38,22 @@ export function ShoppingList({
   }
 
   return (
-    <div className="space-y-2">
-      {items.map((item) => (
-        <ShoppingListItem
-          key={item.id}
-          item={item}
-          isEditing={editingItemId === item.id}
-          onToggleItem={onToggleItem}
-          onDeleteItem={onDeleteItem}
-          onEditItem={onEditItem}
-          onSaveEdit={onSaveEdit}
-          onCancelEdit={onCancelEdit}
-          isOwner={isOwner}
-        />
-      ))}
+    <div className="h-full overflow-y-auto">
+      <div className="space-y-2">
+        {items.map((item) => (
+          <ShoppingListItem
+            key={item.id}
+            item={item}
+            isEditing={editingItemId === item.id}
+            onToggleItem={onToggleItem}
+            onDeleteItem={onDeleteItem}
+            onEditItem={onEditItem}
+            onSaveEdit={onSaveEdit}
+            onCancelEdit={onCancelEdit}
+            isOwner={isOwner}
+          />
+        ))}
+      </div>
     </div>
   );
 }

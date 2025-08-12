@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Drawer, DrawerContent } from "@/components/ui/drawer";
+
 import { Button } from "@/components/ui/button";
 import { Loader2, Save } from "lucide-react";
 
@@ -16,19 +16,14 @@ import { ListDrawerHeader } from "./list-details/list-drawer-header";
 import { ShoppingList } from "./list-details/shopping-list";
 import { SmartSuggestions } from "./list-details/smart-suggestions";
 import { useSession } from "next-auth/react";
+import { drawerService } from "@/stores/drawer-store";
 
 interface ListDetailsDrawerProps {
   list: ShoppingListType;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
 }
 
 // Export the component for dynamic imports
-export function ListDetailsDrawer({
-  list,
-  open,
-  onOpenChange,
-}: ListDetailsDrawerProps) {
+export function ListDetailsDrawer({ list }: ListDetailsDrawerProps) {
   const { data: session } = useSession();
   const [items, setItems] = useState<ShoppingItem[]>(
     JSON.parse(JSON.stringify(list.items))
@@ -41,12 +36,6 @@ export function ListDetailsDrawer({
   });
 
   const updateListItemsMutation = useOfflineUpdateListItemsMutation();
-
-  const originalItems = useMemo(() => list.items, [list]);
-  const hasChanges = useMemo(
-    () => JSON.stringify(originalItems) !== JSON.stringify(items),
-    [originalItems, items]
-  );
 
   const existingItems = useMemo(
     () => items.map((item) => item.name.toLowerCase()),
@@ -154,38 +143,26 @@ export function ListDetailsDrawer({
       listId: list.id,
       items: itemsToUpdate,
     });
-    onOpenChange(false);
+    drawerService.hideDrawer();
   };
 
   const isOwner = session?.user?.id === list.userId;
   return (
-    <Drawer
-      open={open}
-      onOpenChange={(isOpen) => {
-        if (
-          !isOpen &&
-          hasChanges &&
-          !confirm("You have unsaved changes. Are you sure you want to close?")
-        ) {
-          return;
-        }
-        onOpenChange(isOpen);
-      }}
-    >
-      <DrawerContent className="h-[calc(100vh-4rem)] flex flex-col">
-        <ListDrawerHeader listName={list.name} progress={progress} />
+    <div className="h-full flex flex-col">
+      <ListDrawerHeader listName={list.name} progress={progress} />
 
-        <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-24">
-          {isOwner && (
-            <>
-              <AddItemForm onAddItem={handleAddItem} listId={list.id} />
-              <SmartSuggestions
-                onAddItem={handleAddItemFromSuggestion}
-                existingItems={existingItems}
-              />
-            </>
-          )}
+      <div className="flex-1 flex flex-col space-y-4 px-4 pb-10 min-h-0">
+        {isOwner && (
+          <>
+            <AddItemForm onAddItem={handleAddItem} listId={list.id} />
+            <SmartSuggestions
+              onAddItem={handleAddItemFromSuggestion}
+              existingItems={existingItems}
+            />
+          </>
+        )}
 
+        <div className="flex-1 min-h-0 overflow-hidden">
           <ShoppingList
             items={items}
             editingItemId={editingItemId}
@@ -197,24 +174,24 @@ export function ListDetailsDrawer({
             isOwner={isOwner}
           />
         </div>
+      </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t dark:bg-transparent">
-          <Button
-            className="w-full"
-            size="lg"
-            onClick={handleSaveChanges}
-            disabled={updateListItemsMutation.isPending}
-            aria-label="Save Changes"
-          >
-            {updateListItemsMutation.isPending ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="mr-2 h-4 w-4" />
-            )}
-            Save Changes
-          </Button>
-        </div>
-      </DrawerContent>
-    </Drawer>
+      <div className="sticky bottom-0 p-4 bg-white/80 backdrop-blur-sm border-t dark:bg-transparent">
+        <Button
+          className="w-full"
+          size="lg"
+          onClick={handleSaveChanges}
+          disabled={updateListItemsMutation.isPending}
+          aria-label="Save Changes"
+        >
+          {updateListItemsMutation.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="mr-2 h-4 w-4" />
+          )}
+          Save Changes
+        </Button>
+      </div>
+    </div>
   );
 }

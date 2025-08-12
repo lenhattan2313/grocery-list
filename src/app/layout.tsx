@@ -1,4 +1,5 @@
 import { DialogService } from "@/components/common/dialog-service";
+import { DrawerService } from "@/components/common/drawer-service";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -199,6 +200,7 @@ export default function RootLayout({
               <SplashScreen>
                 {children}
                 <DialogService />
+                <DrawerService />
                 <PerformanceMonitor />
                 <PWAInstallPrompt />
                 <PWANavigationHandler />

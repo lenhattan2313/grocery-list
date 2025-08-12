@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, X } from "lucide-react";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,18 +24,19 @@ interface IngredientListProps {
   onChange: (ingredients: Ingredient[]) => void;
 }
 
-export function IngredientList({ ingredients, onChange }: IngredientListProps) {
-  const { control } = useForm({
-    defaultValues: {
-      ingredients,
-    },
-  });
+export function IngredientList({
+  ingredients = [],
+  onChange,
+}: IngredientListProps) {
+  // Ref to track the last added input for focusing
+  const lastAddedInputRef = useRef<HTMLInputElement>(null);
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "ingredients",
-    rules: { minLength: 1 },
-  });
+  // Focus on the last added input when ingredients length changes
+  useEffect(() => {
+    if (lastAddedInputRef.current && ingredients.length > 0) {
+      lastAddedInputRef.current.focus();
+    }
+  }, [ingredients.length]);
 
   const handleIngredientChange = (
     index: number,
@@ -50,12 +51,24 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
     onChange(newIngredients);
   };
 
+  const handleAddIngredient = () => {
+    const newIngredient = { name: "", quantity: "", unit: "g" };
+    onChange([...ingredients, newIngredient]);
+  };
+
+  const handleRemoveIngredient = (index: number) => {
+    const newIngredients = [...ingredients];
+    newIngredients.splice(index, 1);
+    onChange(newIngredients);
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        {fields.map((field, index) => (
-          <div key={field.id} className="flex items-start gap-2">
+        {ingredients.map((_, index) => (
+          <div key={index} className="flex items-start gap-2">
             <Input
+              ref={index === ingredients.length - 1 ? lastAddedInputRef : null}
               placeholder="Ingredient name"
               value={ingredients[index]?.name || ""}
               onChange={(e) =>
@@ -74,7 +87,7 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
               className="w-20"
             />
             <Select
-              value={ingredients[index]?.unit || ""}
+              value={ingredients[index]?.unit || "g"}
               onValueChange={(value) =>
                 handleIngredientChange(index, "unit", value)
               }
@@ -93,12 +106,7 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
             <Button
               variant="outline"
               size="icon"
-              onClick={() => {
-                const newIngredients = [...ingredients];
-                newIngredients.splice(index, 1);
-                onChange(newIngredients);
-                remove(index);
-              }}
+              onClick={() => handleRemoveIngredient(index)}
               aria-label="Remove ingredient"
               className="text-destructive dark:text-destructive"
             >
@@ -108,19 +116,19 @@ export function IngredientList({ ingredients, onChange }: IngredientListProps) {
           </div>
         ))}
       </div>
-      <Button
-        type="button"
-        variant="third"
-        className="w-full"
-        onClick={() => {
-          append({ name: "", quantity: "", unit: "" });
-          onChange([...ingredients, { name: "", quantity: "", unit: "" }]);
-        }}
-        aria-label="Add Ingredient"
-      >
-        <Plus className="h-4 w-4" />
-        Add Ingredient
-      </Button>
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          variant="third"
+          size="sm"
+          className="w-fit"
+          onClick={handleAddIngredient}
+          aria-label="Add Ingredient"
+        >
+          <Plus className="h-4 w-4" />
+          Add Ingredient
+        </Button>
+      </div>
     </div>
   );
 }
