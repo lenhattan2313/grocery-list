@@ -84,8 +84,10 @@ export function RecipeViewDrawer({
 
         {recipe.instructions && (
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Instructions</h3>
-            <div className="prose prose-sm max-w-none">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+              Instructions
+            </h3>
+            <div className="prose prose-sm max-w-none text-gray-800 dark:text-gray-100">
               {recipe.instructions.split("\n").map((instruction, index) => (
                 <p key={index}>{instruction}</p>
               ))}

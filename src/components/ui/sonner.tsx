@@ -27,6 +27,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--info-bg": "hsl(var(--muted))",
           "--info-text": "hsl(var(--muted-foreground))",
           "--info-border": "hsl(var(--border))",
+          "margin-top": "env(safe-area-inset-top, 0px)",
         } as React.CSSProperties
       }
       toastOptions={{
