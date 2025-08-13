@@ -180,25 +180,44 @@ Grocery App is a comprehensive family shopping companion that seamlessly connect
 
 ## 📱 App Screenshots
 
-### Shopping Lists
+<div align="center">
 
-![Shopping Lists](public/screenshots/shopping-lists.png)
+### Shopping Lists & Recipe Management
 
-### Recipe Management
+<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">
+  <div style="text-align: center;">
+    <img src="public/screenshots/shopping-lists.png" alt="Shopping Lists" width="280" height="560" />
+    <p><strong>Shopping Lists</strong></p>
+  </div>
+  <div style="text-align: center;">
+    <img src="public/screenshots/recipes.png" alt="Recipes" width="280" height="560" />
+    <p><strong>Recipe Management</strong></p>
+  </div>
+</div>
 
-![Recipes](public/screenshots/recipes.png)
+### Family Profile & Voice Input
 
-### Family Profile
-
-![Profile](public/screenshots/profile.png)
-
-### Voice Input
-
-![Voice Input](public/screenshots/voice-input.png)
+<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">
+  <div style="text-align: center;">
+    <img src="public/screenshots/profile.png" alt="Profile" width="280" height="560" />
+    <p><strong>Family Profile</strong></p>
+  </div>
+  <div style="text-align: center;">
+    <img src="public/screenshots/voice-input.png" alt="Voice Input" width="280" height="560" />
+    <p><strong>Voice Input</strong></p>
+  </div>
+</div>git 
 
 ### AI Recipe Generation
 
-![AI Recipes](public/screenshots/ai-recipes.png)
+<div style="display: flex; justify-content: center; gap: 20px;">
+  <div style="text-align: center;">
+    <img src="public/screenshots/ai-recipes.png" alt="AI Recipes" width="280" height="560" />
+    <p><strong>AI Recipe Generation</strong></p>
+  </div>
+</div>
+
+</div>
 
 ---
 
