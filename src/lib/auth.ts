@@ -55,6 +55,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
   },
-  // Add explicit base URL configuration
-  basePath: "/api/auth",
 });
