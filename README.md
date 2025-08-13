@@ -180,29 +180,25 @@ Grocery App is a comprehensive family shopping companion that seamlessly connect
 
 ## 📱 App Screenshots
 
-### Main Dashboard
-
-![Dashboard](https://via.placeholder.com/400x800/4F46E5/FFFFFF?text=Dashboard)
-
 ### Shopping Lists
 
-![Shopping Lists](https://via.placeholder.com/400x800/10B981/FFFFFF?text=Shopping+Lists)
+![Shopping Lists](public/screenshots/shopping-lists.png)
 
 ### Recipe Management
 
-![Recipes](https://via.placeholder.com/400x800/F59E0B/FFFFFF?text=Recipes)
+![Recipes](public/screenshots/recipes.png)
 
 ### Family Profile
 
-![Profile](https://via.placeholder.com/400x800/EF4444/FFFFFF?text=Profile)
+![Profile](public/screenshots/profile.png)
 
 ### Voice Input
 
-![Voice Input](https://via.placeholder.com/400x800/8B5CF6/FFFFFF?text=Voice+Input)
+![Voice Input](public/screenshots/voice-input.png)
 
 ### AI Recipe Generation
 
-![AI Recipes](https://via.placeholder.com/400x800/06B6D4/FFFFFF?text=AI+Recipes)
+![AI Recipes](public/screenshots/ai-recipes.png)
 
 ---
 
