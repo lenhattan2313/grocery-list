@@ -6,6 +6,8 @@
 
 **A modern, feature-rich grocery shopping app designed for families**
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Visit%20App-blue?style=for-the-badge&logo=vercel)](https://grocery-list-gilt-nine.vercel.app/)
+
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -176,6 +178,18 @@ Grocery App is a comprehensive family shopping companion that seamlessly connect
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+### 🚀 Live Demo
+
+**Try the app now:** [https://grocery-list-gilt-nine.vercel.app/](https://grocery-list-gilt-nine.vercel.app/)
+
+Experience all the features including:
+
+- Shopping list management
+- AI recipe generation
+- Voice input functionality
+- Family collaboration
+- PWA installation
+
 ---
 
 ## 📱 App Screenshots
@@ -184,38 +198,19 @@ Grocery App is a comprehensive family shopping companion that seamlessly connect
 
 ### Shopping Lists & Recipe Management
 
-<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">
-  <div style="text-align: center;">
-    <img src="public/screenshots/shopping-lists.png" alt="Shopping Lists" width="280" height="560" />
-    <p><strong>Shopping Lists</strong></p>
-  </div>
-  <div style="text-align: center;">
-    <img src="public/screenshots/recipes.png" alt="Recipes" width="280" height="560" />
-    <p><strong>Recipe Management</strong></p>
-  </div>
-</div>
+|                                          Shopping Lists                                           |                                  Recipe Management                                  |
+| :-----------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------: |
+| <img src="public/screenshots/shopping-lists.png" alt="Shopping Lists" width="280" height="560" /> | <img src="public/screenshots/recipes.png" alt="Recipes" width="280" height="560" /> |
 
 ### Family Profile & Voice Input
 
-<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 30px;">
-  <div style="text-align: center;">
-    <img src="public/screenshots/profile.png" alt="Profile" width="280" height="560" />
-    <p><strong>Family Profile</strong></p>
-  </div>
-  <div style="text-align: center;">
-    <img src="public/screenshots/voice-input.png" alt="Voice Input" width="280" height="560" />
-    <p><strong>Voice Input</strong></p>
-  </div>
-</div>git 
+|                                   Family Profile                                    |                                         Voice Input                                         |
+| :---------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: |
+| <img src="public/screenshots/profile.png" alt="Profile" width="280" height="560" /> | <img src="public/screenshots/voice-input.png" alt="Voice Input" width="280" height="560" /> |
 
 ### AI Recipe Generation
 
-<div style="display: flex; justify-content: center; gap: 20px;">
-  <div style="text-align: center;">
-    <img src="public/screenshots/ai-recipes.png" alt="AI Recipes" width="280" height="560" />
-    <p><strong>AI Recipe Generation</strong></p>
-  </div>
-</div>
+<img src="public/screenshots/ai-recipes.png" alt="AI Recipes" width="280" height="560" />
 
 </div>
 
@@ -293,6 +288,10 @@ npm run build:analyze    # Analyze bundle size
 ## 🚀 Deployment
 
 ### Vercel (Recommended)
+
+This app is currently deployed on Vercel: [https://grocery-list-gilt-nine.vercel.app/](https://grocery-list-gilt-nine.vercel.app/)
+
+To deploy your own instance:
 
 1. **Connect your repository** to Vercel
 2. **Set environment variables** in Vercel dashboard
