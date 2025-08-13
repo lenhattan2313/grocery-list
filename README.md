@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Grocery App Logo](public/icon512_rounded.png)
+<img src="public/icon512_rounded.png" alt="Grocery App Logo" width="120" height="120" />
 
 **A modern, feature-rich grocery shopping app designed for families**
 
@@ -15,6 +15,20 @@
 [![PWA](https://img.shields.io/badge/PWA-Ready-green?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
 
 </div>
+
+## 🚀 Live Demo
+
+**Try the app now:** [https://grocery-list-gilt-nine.vercel.app/](https://grocery-list-gilt-nine.vercel.app/)
+
+Experience all the features including:
+
+- Shopping list management
+- AI recipe generation
+- Voice input functionality
+- Family collaboration
+- PWA installation
+
+---
 
 ## 📱 App Overview
 
@@ -177,18 +191,6 @@ Grocery App is a comprehensive family shopping companion that seamlessly connect
 
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
-
-### 🚀 Live Demo
-
-**Try the app now:** [https://grocery-list-gilt-nine.vercel.app/](https://grocery-list-gilt-nine.vercel.app/)
-
-Experience all the features including:
-
-- Shopping list management
-- AI recipe generation
-- Voice input functionality
-- Family collaboration
-- PWA installation
 
 ---
 
