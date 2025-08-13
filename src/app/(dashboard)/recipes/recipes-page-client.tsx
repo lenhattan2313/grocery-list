@@ -19,6 +19,7 @@ import {
   useDeleteRecipeMutation,
   RecipeWithIngredients,
 } from "@/hooks/use-recipes-query";
+import { useRecipeImportExport } from "@/hooks/use-recipe-import-export";
 
 interface RecipesPageClientProps {
   initialRecipes: RecipeWithIngredients[];
@@ -37,6 +38,18 @@ export default function RecipesPageClient({
   const createRecipeMutation = useCreateRecipeMutation();
   const updateRecipeMutation = useUpdateRecipeMutation();
   const deleteRecipeMutation = useDeleteRecipeMutation();
+
+  const {
+    fileInputRef,
+    handleImport,
+    handleFileImport,
+    handleExport,
+    handleExportCSV,
+  } = useRecipeImportExport({
+    onImportRecipe: async (recipe: CreateRecipeForm) => {
+      await createRecipeMutation.mutateAsync(recipe);
+    },
+  });
 
   const filteredRecipes = recipes.filter((recipe) =>
     recipe.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -93,6 +106,15 @@ export default function RecipesPageClient({
 
   return (
     <div>
+      {/* Hidden file input for import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        onChange={handleFileImport}
+        className="hidden"
+      />
+
       <PageHeader title="Recipes" className="mb-6">
         <PageHeaderSearch onSearch={setSearchQuery} />
       </PageHeader>
@@ -148,6 +170,9 @@ export default function RecipesPageClient({
                   ),
                 });
               }}
+              onImport={handleImport}
+              onExport={handleExport}
+              onExportCSV={handleExportCSV}
             />
           ))}
         </div>

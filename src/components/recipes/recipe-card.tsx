@@ -8,8 +8,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { RecipeWithIngredients } from "@/hooks/use-recipes-query";
-import { ChefHat, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  ChefHat,
+  Download,
+  Eye,
+  MoreVertical,
+  Pencil,
+  Plus,
+  Trash2,
+  Upload,
+  FileSpreadsheet,
+} from "lucide-react";
 import Image from "next/image";
 
 interface RecipeCardProps {
@@ -18,6 +34,9 @@ interface RecipeCardProps {
   onDelete?: (recipe: RecipeWithIngredients) => void;
   onAddToList?: (recipe: RecipeWithIngredients) => void;
   onView?: (recipe: RecipeWithIngredients) => void;
+  onImport?: () => void;
+  onExport?: (recipe: RecipeWithIngredients) => void;
+  onExportCSV?: (recipe: RecipeWithIngredients) => void;
   isPriority?: boolean;
 }
 
@@ -27,10 +46,65 @@ export function RecipeCard({
   onDelete,
   onAddToList,
   onView,
+  onImport,
+  onExport,
+  onExportCSV,
   isPriority,
 }: RecipeCardProps) {
+  const handleExport = () => {
+    if (!onExport) return;
+    onExport(recipe);
+  };
+
+  const handleExportCSV = () => {
+    if (!onExportCSV) return;
+    onExportCSV(recipe);
+  };
+
   return (
-    <Card className="w-full overflow-hidden gap-4 pt-0">
+    <Card className="w-full overflow-hidden gap-4 pt-0 relative">
+      {/* More options dropdown */}
+      <div className="absolute top-2 right-2 z-10">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background/90"
+              aria-label="More options"
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {onImport && (
+              <DropdownMenuItem onClick={onImport} className="cursor-pointer">
+                <Upload className="mr-2 h-4 w-4" />
+                Import Recipe
+              </DropdownMenuItem>
+            )}
+            {onExport && (
+              <DropdownMenuItem
+                onClick={handleExport}
+                className="cursor-pointer"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export as JSON
+              </DropdownMenuItem>
+            )}
+            {onExportCSV && (
+              <DropdownMenuItem
+                onClick={handleExportCSV}
+                className="cursor-pointer"
+              >
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Export as CSV
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {recipe.image ? (
         <div className="relative w-full aspect-[21/9]">
           <Image
@@ -86,7 +160,6 @@ export function RecipeCard({
             size="icon"
             onClick={() => onEdit(recipe)}
             aria-label="Edit recipe"
-            
           >
             <Pencil className="h-4 w-4" />
           </Button>
