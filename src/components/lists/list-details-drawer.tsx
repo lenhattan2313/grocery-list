@@ -31,6 +31,7 @@ export function ListDetailsDrawer({ list }: ListDetailsDrawerProps) {
   );
 
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [isCopying, setIsCopying] = useState(false);
 
   const { reset } = useForm({
     resolver: zodResolver(CreateItemSchema),
@@ -169,6 +170,37 @@ export function ListDetailsDrawer({ list }: ListDetailsDrawerProps) {
     createDownloadableFile(fullContent, filename, "text/plain;charset=utf-8");
   };
 
+  const handleCopyList = async () => {
+    if (items.length === 0) return;
+
+    setIsCopying(true);
+    const copyContent = items
+      .map((item, index) => {
+        const status = item.isCompleted ? "[✓]" : "[ ]";
+        const quantity =
+          item.quantity > 1 ? `${item.quantity} ${item.unit}` : item.unit;
+        const notes = item.notes ? ` - ${item.notes}` : "";
+        return `${index + 1}. ${status} ${item.name} (${quantity})${notes}`;
+      })
+      .join("\n");
+
+    try {
+      await navigator.clipboard.writeText(copyContent);
+      // You could add a toast notification here if you have a toast system
+    } catch (error) {
+      console.error("Failed to copy to clipboard:", error);
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = copyContent;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+      // Reset the copying state after a short delay to show success
+      setTimeout(() => setIsCopying(false), 1000);
+    }
+  };
+
   const isOwner = session?.user?.id === list.userId;
   const hasItems = items.length > 0;
 
@@ -178,7 +210,9 @@ export function ListDetailsDrawer({ list }: ListDetailsDrawerProps) {
         listName={list.name}
         progress={progress}
         onExport={handleExportList}
+        onCopy={handleCopyList}
         hasItems={hasItems}
+        isCopying={isCopying}
       />
 
       <div className="flex-1 flex flex-col space-y-4 px-4 pb-10 min-h-0">

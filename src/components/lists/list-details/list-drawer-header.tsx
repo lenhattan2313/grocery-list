@@ -1,9 +1,9 @@
 "use client";
 
-import { ShoppingCart, Download } from "lucide-react";
-import { DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
+import { DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { cn, getProgressColors } from "@/lib/utils";
+import { Copy, Download, ShoppingCart } from "lucide-react";
 
 interface ListDrawerHeaderProps {
   listName: string;
@@ -12,14 +12,18 @@ interface ListDrawerHeaderProps {
     percentage: number;
   };
   onExport: () => void;
+  onCopy: () => void;
   hasItems?: boolean;
+  isCopying?: boolean;
 }
 
 export function ListDrawerHeader({
   listName,
   progress,
   onExport,
+  onCopy,
   hasItems = false,
+  isCopying = false,
 }: ListDrawerHeaderProps) {
   return (
     <DrawerHeader>
@@ -29,6 +33,28 @@ export function ListDrawerHeader({
           {listName}
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant={isCopying ? "default" : "outline"}
+            size="icon"
+            onClick={onCopy}
+            disabled={!hasItems}
+            className={cn(
+              "h-8 w-8 transition-all duration-200",
+              isCopying && "bg-primary"
+            )}
+            aria-label="Copy list items to clipboard"
+          >
+            {isCopying ? (
+              <Copy
+                className={cn(
+                  "h-4 w-4",
+                  isCopying && "text-white dark:text-black"
+                )}
+              />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </Button>
           <Button
             variant="outline"
             size="icon"
