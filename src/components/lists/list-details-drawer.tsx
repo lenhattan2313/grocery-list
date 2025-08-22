@@ -17,6 +17,7 @@ import { ShoppingList } from "./list-details/shopping-list";
 import { SmartSuggestions } from "./list-details/smart-suggestions";
 import { useSession } from "next-auth/react";
 import { drawerService } from "@/stores/drawer-store";
+import { createDownloadableFile, sanitizeFilename } from "@/lib/file-download";
 
 interface ListDetailsDrawerProps {
   list: ShoppingListType;
@@ -146,10 +147,39 @@ export function ListDetailsDrawer({ list }: ListDetailsDrawerProps) {
     drawerService.hideDrawer();
   };
 
+  const handleExportList = () => {
+    if (items.length === 0) return;
+
+    const exportContent = items
+      .map((item, index) => {
+        const status = item.isCompleted ? "[✓]" : "[ ]";
+        const quantity =
+          item.quantity > 1 ? `${item.quantity} ${item.unit}` : item.unit;
+        const notes = item.notes ? ` - ${item.notes}` : "";
+        return `${index + 1}. ${status} ${item.name} (${quantity})${notes}`;
+      })
+      .join("\n");
+
+    const header = `Shopping List: ${
+      list.name
+    }\nGenerated on: ${new Date().toLocaleDateString()}\n\n`;
+    const fullContent = header + exportContent;
+
+    const filename = `${sanitizeFilename(list.name)}_shopping_list.txt`;
+    createDownloadableFile(fullContent, filename, "text/plain;charset=utf-8");
+  };
+
   const isOwner = session?.user?.id === list.userId;
+  const hasItems = items.length > 0;
+
   return (
     <div className="h-full flex flex-col">
-      <ListDrawerHeader listName={list.name} progress={progress} />
+      <ListDrawerHeader
+        listName={list.name}
+        progress={progress}
+        onExport={handleExportList}
+        hasItems={hasItems}
+      />
 
       <div className="flex-1 flex flex-col space-y-4 px-4 pb-10 min-h-0">
         {isOwner && (
