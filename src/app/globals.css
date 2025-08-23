@@ -149,6 +149,56 @@
 
   body {
     @apply bg-background text-foreground;
+    /* Prevent iOS pull-to-refresh and overscroll bounce */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+    /* Prevent text selection on drag */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent iOS zoom on double tap */
+    touch-action: manipulation;
+  }
+
+  /* Prevent drag layout issues on iOS */
+  html {
+    /* Prevent pull-to-refresh */
+    overscroll-behavior: none;
+    /* Prevent iOS zoom */
+    touch-action: manipulation;
+    /* Prevent text selection */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in specific areas */
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+  /* Prevent touch delays on interactive elements */
+  button,
+  a,
+  [role="button"],
+  [tabindex] {
+    touch-action: manipulation;
+  }
+
+  /* Prevent overscroll on scrollable containers */
+  .overflow-auto,
+  .overflow-scroll,
+  .overflow-y-auto,
+  .overflow-y-scroll {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

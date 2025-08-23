@@ -114,6 +114,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
   themeColor: "#000000",
 };
@@ -132,6 +134,13 @@ export default function RootLayout({
         />
         <meta name="apple-mobile-web-app-title" content="Grocery App" />
         <link rel="apple-touch-icon" href="/icon512_maskable.png" />
+        {/* Prevent iOS drag layout issues */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+        />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="apple-touch-fullscreen" content="yes" />
       </head>
 
       <body
