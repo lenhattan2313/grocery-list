@@ -25,6 +25,7 @@ import {
   Trash2,
   Upload,
   FileSpreadsheet,
+  Heart,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -37,6 +38,7 @@ interface RecipeCardProps {
   onImport?: () => void;
   onExport?: (recipe: RecipeWithIngredients) => void;
   onExportCSV?: (recipe: RecipeWithIngredients) => void;
+  onToggleFavorite?: (recipeId: string) => void;
   isPriority?: boolean;
 }
 
@@ -49,6 +51,7 @@ export function RecipeCard({
   onImport,
   onExport,
   onExportCSV,
+  onToggleFavorite,
   isPriority,
 }: RecipeCardProps) {
   const handleExport = () => {
@@ -61,8 +64,33 @@ export function RecipeCard({
     onExportCSV(recipe);
   };
 
+  const isFavorited = recipe.favoritedBy
+    ? recipe.favoritedBy.length > 0
+    : false;
+
   return (
     <Card className="w-full overflow-hidden gap-4 pt-0 relative">
+      {/* Favorite button */}
+      {onToggleFavorite && (
+        <div className="absolute top-2 left-2 z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background/90 transition-colors ${
+              isFavorited
+                ? "text-red-500 hover:text-red-600"
+                : "text-gray-400 hover:text-red-500"
+            }`}
+            onClick={() => onToggleFavorite(recipe.id)}
+            aria-label={
+              isFavorited ? "Remove from favorites" : "Add to favorites"
+            }
+          >
+            <Heart className={`h-4 w-4 ${isFavorited ? "text-red-500" : ""}`} />
+          </Button>
+        </div>
+      )}
+
       {/* More options dropdown */}
       <div className="absolute top-2 right-2 z-10">
         <DropdownMenu>

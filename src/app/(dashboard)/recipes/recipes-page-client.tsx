@@ -17,6 +17,7 @@ import {
   useCreateRecipeMutation,
   useUpdateRecipeMutation,
   useDeleteRecipeMutation,
+  useToggleFavoriteRecipeMutation,
   RecipeWithIngredients,
 } from "@/hooks/use-recipes-query";
 import { useRecipeImportExport } from "@/hooks/use-recipe-import-export";
@@ -29,15 +30,21 @@ export default function RecipesPageClient({
   initialRecipes,
 }: RecipesPageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const {
     data: recipes = initialRecipes,
     isLoading,
     error,
-  } = useRecipesQuery();
+  } = useRecipesQuery() as {
+    data: RecipeWithIngredients[];
+    isLoading: boolean;
+    error: Error | null;
+  };
   const createRecipeMutation = useCreateRecipeMutation();
   const updateRecipeMutation = useUpdateRecipeMutation();
   const deleteRecipeMutation = useDeleteRecipeMutation();
+  const toggleFavoriteMutation = useToggleFavoriteRecipeMutation();
 
   const {
     fileInputRef,
@@ -51,9 +58,15 @@ export default function RecipesPageClient({
     },
   });
 
-  const filteredRecipes = recipes.filter((recipe) =>
-    recipe.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRecipes = recipes.filter((recipe) => {
+    const matchesSearch = recipe.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesFavoriteFilter =
+      !showFavoritesOnly ||
+      (recipe.favoritedBy && recipe.favoritedBy.length > 0);
+    return matchesSearch && matchesFavoriteFilter;
+  });
 
   const handleAddRecipe = async (data: CreateRecipeForm) => {
     await createRecipeMutation.mutateAsync(data);
@@ -96,6 +109,14 @@ export default function RecipesPageClient({
     );
   };
 
+  const handleToggleFavorite = (recipeId: string) => {
+    toggleFavoriteMutation.mutate(recipeId);
+  };
+
+  const handleFavoriteFilterToggle = () => {
+    setShowFavoritesOnly(!showFavoritesOnly);
+  };
+
   if (error) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -116,7 +137,12 @@ export default function RecipesPageClient({
       />
 
       <PageHeader title="Recipes" className="mb-6">
-        <PageHeaderSearch onSearch={setSearchQuery} />
+        <PageHeaderSearch
+          onSearch={setSearchQuery}
+          showFavoriteFilter={true}
+          isFavoriteFilterActive={showFavoritesOnly}
+          onFavoriteFilterToggle={handleFavoriteFilterToggle}
+        />
       </PageHeader>
 
       {isLoading && recipes.length === 0 ? (
@@ -126,8 +152,8 @@ export default function RecipesPageClient({
       ) : filteredRecipes.length === 0 ? (
         <div className="flex items-center justify-center h-64">
           <p className="text-muted-foreground">
-            {searchQuery
-              ? "No recipes found matching your search."
+            {searchQuery || showFavoritesOnly
+              ? "No recipes found matching your criteria."
               : "No recipes yet. Add your first recipe!"}
           </p>
         </div>
@@ -158,6 +184,7 @@ export default function RecipesPageClient({
               }}
               onDelete={handleOpenDeleteDialog}
               onAddToList={handleAddToList}
+              onToggleFavorite={handleToggleFavorite}
               onView={(recipe) => {
                 drawerService.showDrawer({
                   id: `recipe-view-${recipe.id}`,

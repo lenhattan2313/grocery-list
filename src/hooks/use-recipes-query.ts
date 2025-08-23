@@ -7,18 +7,108 @@ import {
   createRecipe,
   updateRecipe,
   deleteRecipe,
+  toggleFavoriteRecipe,
+  getFavoriteRecipes,
 } from "@/app/actions/recipes";
 import { CreateRecipeForm } from "@/types";
 import { Prisma } from "@prisma/client";
 
 export const RECIPES_QUERY_KEY = "recipes";
+export const FAVORITE_RECIPES_QUERY_KEY = "favorite-recipes";
 export type RecipeWithIngredients = Prisma.RecipeGetPayload<{
-  include: { ingredients: true };
+  include: { ingredients: true; favoritedBy: true };
 }>;
+
 export function useRecipesQuery() {
   return useQuery<RecipeWithIngredients[], Error>({
     queryKey: [RECIPES_QUERY_KEY],
     queryFn: getRecipes,
+  });
+}
+
+export function useFavoriteRecipesQuery() {
+  return useQuery<string[], Error>({
+    queryKey: [FAVORITE_RECIPES_QUERY_KEY],
+    queryFn: getFavoriteRecipes,
+  });
+}
+
+export function useToggleFavoriteRecipeMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (recipeId: string) => toggleFavoriteRecipe(recipeId),
+    onMutate: async (recipeId: string) => {
+      await queryClient.cancelQueries({ queryKey: [RECIPES_QUERY_KEY] });
+      await queryClient.cancelQueries({
+        queryKey: [FAVORITE_RECIPES_QUERY_KEY],
+      });
+
+      const previousRecipes = queryClient.getQueryData<RecipeWithIngredients[]>(
+        [RECIPES_QUERY_KEY]
+      );
+      const previousFavorites = queryClient.getQueryData<string[]>([
+        FAVORITE_RECIPES_QUERY_KEY,
+      ]);
+
+      // Optimistic update for recipes
+      queryClient.setQueryData<RecipeWithIngredients[]>(
+        [RECIPES_QUERY_KEY],
+        (oldData = []) =>
+          oldData.map((recipe) =>
+            recipe.id === recipeId
+              ? {
+                  ...recipe,
+                  favoritedBy:
+                    recipe.favoritedBy.length > 0
+                      ? []
+                      : [
+                          {
+                            id: `optimistic-${Date.now()}`,
+                            userId: "current-user",
+                            recipeId,
+                            createdAt: new Date(),
+                          },
+                        ],
+                }
+              : recipe
+          )
+      );
+
+      // Optimistic update for favorites list
+      queryClient.setQueryData<string[]>(
+        [FAVORITE_RECIPES_QUERY_KEY],
+        (oldData = []) => {
+          const isCurrentlyFavorited = oldData.includes(recipeId);
+          if (isCurrentlyFavorited) {
+            return oldData.filter((id) => id !== recipeId);
+          } else {
+            return [...oldData, recipeId];
+          }
+        }
+      );
+
+      return { previousRecipes, previousFavorites };
+    },
+    onSuccess: () => {
+      // Removed toast as requested
+    },
+    onError: (error: Error, _variables, context) => {
+      if (context?.previousRecipes) {
+        queryClient.setQueryData([RECIPES_QUERY_KEY], context.previousRecipes);
+      }
+      if (context?.previousFavorites) {
+        queryClient.setQueryData(
+          [FAVORITE_RECIPES_QUERY_KEY],
+          context.previousFavorites
+        );
+      }
+      toast.error(error.message || "Failed to update favorite status.");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: [RECIPES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [FAVORITE_RECIPES_QUERY_KEY] });
+    },
   });
 }
 
@@ -52,6 +142,7 @@ export function useCreateRecipeMutation() {
           id: `optimistic-ing-${optimisticId}-${index}`,
           recipeId: optimisticId,
         })),
+        favoritedBy: [], // Empty array for new recipes
       };
 
       queryClient.setQueryData<RecipeWithIngredients[]>(

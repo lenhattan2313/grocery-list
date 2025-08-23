@@ -26,6 +26,11 @@ export async function getRecipes() {
     },
     include: {
       ingredients: true,
+      favoritedBy: {
+        where: {
+          userId: session.user.id,
+        },
+      },
     },
     orderBy: {
       updatedAt: "desc",
@@ -188,4 +193,79 @@ export async function addRecipeToListAsync(
 
   revalidatePath("/");
   return updatedList;
+}
+
+export async function toggleFavoriteRecipe(recipeId: string): Promise<boolean> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  // Check if recipe exists and user has access
+  const recipe = await prisma.recipe.findFirst({
+    where: {
+      id: recipeId,
+      OR: [
+        { userId: session.user.id },
+        {
+          household: {
+            members: {
+              some: {
+                userId: session.user.id,
+              },
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  if (!recipe) {
+    throw new Error("Recipe not found");
+  }
+
+  // Check if already favorited
+  const existingFavorite = await prisma.favoriteRecipe.findUnique({
+    where: {
+      userId_recipeId: {
+        userId: session.user.id,
+        recipeId: recipeId,
+      },
+    },
+  });
+
+  if (existingFavorite) {
+    // Remove from favorites
+    await prisma.favoriteRecipe.delete({
+      where: {
+        id: existingFavorite.id,
+      },
+    });
+    return false;
+  } else {
+    // Add to favorites
+    await prisma.favoriteRecipe.create({
+      data: {
+        userId: session.user.id,
+        recipeId: recipeId,
+      },
+    });
+    return true;
+  }
+}
+
+export async function getFavoriteRecipes(): Promise<string[]> {
+  const session = await auth();
+  if (!session?.user?.id) return [];
+
+  const favorites = await prisma.favoriteRecipe.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    select: {
+      recipeId: true,
+    },
+  });
+
+  return favorites.map((favorite) => favorite.recipeId);
 }

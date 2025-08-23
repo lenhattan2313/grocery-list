@@ -36,7 +36,6 @@ model Account {
   @@map("accounts")
 }
 
-
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -67,12 +66,13 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  accounts   Account[]
-  sessions   Session[]
-  households HouseholdMember[]
-  lists      ShoppingList[] // Lists created by the user
-  recipes    Recipe[]
+  accounts          Account[]
+  sessions          Session[]
+  households        HouseholdMember[]
+  lists             ShoppingList[] // Lists created by the user
+  recipes           Recipe[]
   pushSubscriptions PushSubscription[] // Push notification subscriptions
+  favoriteRecipes   FavoriteRecipe[]
 
   @@map("users")
 }
@@ -119,10 +119,10 @@ model ShoppingList {
   householdId String?
 
   // Add reminder fields
-  hasReminder    Boolean  @default(false)
-  reminderTime   DateTime?
+  hasReminder     Boolean   @default(false)
+  reminderTime    DateTime?
   reminderMessage String?
-  reminderSent   Boolean  @default(false) // Track if reminder notification was sent
+  reminderSent    Boolean   @default(false) // Track if reminder notification was sent
 
   // Relations
   user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -167,6 +167,7 @@ model Recipe {
   user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   household   Household?         @relation(fields: [householdId], references: [id], onDelete: SetNull)
   ingredients RecipeIngredient[]
+  favoritedBy FavoriteRecipe[]
 
   @@map("recipes")
 }
@@ -185,16 +186,30 @@ model RecipeIngredient {
 }
 
 model PushSubscription {
-  id           String   @id @default(cuid())
-  userId       String
-  endpoint     String   @unique
-  p256dh       String
-  auth         String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("push_subscriptions")
+}
+
+model FavoriteRecipe {
+  id        String   @id @default(cuid())
+  userId    String
+  recipeId  String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+  @@map("favorite_recipes")
 }

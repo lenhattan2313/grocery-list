@@ -64,6 +64,7 @@ export interface Recipe {
   userId: string;
   householdId?: string;
   ingredients: RecipeIngredient[];
+  favoritedBy?: FavoriteRecipe[];
 }
 
 export interface RecipeIngredient {
@@ -72,6 +73,15 @@ export interface RecipeIngredient {
   quantity: string;
   unit: string;
   recipeId: string;
+}
+
+export interface FavoriteRecipe {
+  id: string;
+  userId: string;
+  recipeId: string;
+  createdAt: Date;
+  user?: User;
+  recipe?: Recipe;
 }
 
 // Form types
