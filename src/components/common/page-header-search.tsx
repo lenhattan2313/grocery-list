@@ -4,7 +4,7 @@ import { Search, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 interface PageHeaderSearchProps {
   onSearch?: (value: string) => void;
@@ -26,6 +26,11 @@ export function PageHeaderSearch({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const handleCollapse = useCallback(() => {
+    setIsExpanded(false);
+    setSearchValue("");
+    onSearch?.("");
+  }, [onSearch]);
   // Notify parent component about expansion state
   useEffect(() => {
     onExpandChange?.(isExpanded);
@@ -57,22 +62,20 @@ export function PageHeaderSearch({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isExpanded]);
+  }, [handleCollapse, isExpanded]);
 
-  const handleExpand = () => {
+  const handleExpand = useCallback(() => {
     setIsExpanded(true);
-  };
+  }, []);
 
-  const handleCollapse = () => {
-    setIsExpanded(false);
-    setSearchValue("");
-    onSearch?.("");
-  };
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchValue(value);
+      onSearch?.(value);
+    },
+    [onSearch]
+  );
 
-  const handleSearchChange = (value: string) => {
-    setSearchValue(value);
-    onSearch?.(value);
-  };
   if (isExpanded) {
     return (
       <div className="relative w-full group" ref={containerRef}>
@@ -111,7 +114,7 @@ export function PageHeaderSearch({
           size="sm"
           onClick={onFavoriteFilterToggle}
           className={cn(
-            "h-9 px-3 gap-2",
+            "h-9 w-9 px-3 gap-2",
             "border-gray-200 bg-gray-50/50",
             "hover:bg-white hover:border-gray-300",
             "transition-all duration-500",

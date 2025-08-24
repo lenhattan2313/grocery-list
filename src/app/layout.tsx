@@ -28,7 +28,15 @@ const geistMono = Geist_Mono({
   fallback: ["monospace"],
 });
 
+const getMetadataBase = () => {
+  if (process.env.NODE_ENV === "production") {
+    return process.env.NEXT_PUBLIC_APP_URL || "https://grocery-app.vercel.app";
+  }
+  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+};
+
 export const metadata: Metadata = {
+  metadataBase: new URL(getMetadataBase()),
   title: {
     default: "Grocery App",
     template: "%s | Grocery App",
