@@ -15,7 +15,7 @@ export function SkeletonCard() {
 
 export function PageSkeleton({ numCards = 3 }: { numCards?: number }) {
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div className="px-4 sm:px-6 lg:px-8 mt-10">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: numCards }).map((_, index) => (
           <SkeletonCard key={index} />

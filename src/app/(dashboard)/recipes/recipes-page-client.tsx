@@ -6,12 +6,11 @@ import { RecipeCard } from "@/components/recipes/recipe-card";
 import { showRecipeToListDialog } from "@/components/recipes/recipe-to-list-dialog";
 import { CreateRecipeForm, RecipeIngredient } from "@/types";
 import { FloatingActionButton } from "@/components/common/floating-action-button";
-import { PageHeader } from "@/components/common/page-header";
+import { PageHeaderWithSearch } from "@/components/common/page-header-with-search";
 import { dialogService } from "@/stores/dialog-store";
 import { drawerService } from "@/stores/drawer-store";
 import { RecipeFormDrawer } from "@/components/dynamic-imports";
 import { RecipeViewDrawer } from "@/components/dynamic-imports";
-import { PageHeaderSearch } from "@/components/common/page-header-search";
 import {
   useRecipesQuery,
   useCreateRecipeMutation,
@@ -21,6 +20,7 @@ import {
   RecipeWithIngredients,
 } from "@/hooks/use-recipes-query";
 import { useRecipeImportExport } from "@/hooks/use-recipe-import-export";
+import { useSearchParamState } from "@/hooks/use-search-params";
 
 interface RecipesPageClientProps {
   initialRecipes: RecipeWithIngredients[];
@@ -29,7 +29,7 @@ interface RecipesPageClientProps {
 export default function RecipesPageClient({
   initialRecipes,
 }: RecipesPageClientProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useSearchParamState("q", "");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const {
@@ -113,10 +113,6 @@ export default function RecipesPageClient({
     toggleFavoriteMutation.mutate(recipeId);
   };
 
-  const handleFavoriteFilterToggle = () => {
-    setShowFavoritesOnly(!showFavoritesOnly);
-  };
-
   if (error) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -136,14 +132,14 @@ export default function RecipesPageClient({
         className="hidden"
       />
 
-      <PageHeader title="Recipes" className="mb-6">
-        <PageHeaderSearch
-          onSearch={setSearchQuery}
-          showFavoriteFilter={true}
-          isFavoriteFilterActive={showFavoritesOnly}
-          onFavoriteFilterToggle={handleFavoriteFilterToggle}
-        />
-      </PageHeader>
+      <PageHeaderWithSearch
+        title="Recipes"
+        className="mb-6"
+        searchParam="q"
+        showFavoriteFilter={true}
+        isFavoriteFilterActive={showFavoritesOnly}
+        onFavoriteFilterToggle={() => setShowFavoritesOnly(!showFavoritesOnly)}
+      />
 
       {isLoading && recipes.length === 0 ? (
         <div className="flex items-center justify-center h-64">

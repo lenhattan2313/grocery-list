@@ -7,6 +7,8 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, children, className }: PageHeaderProps) {
+  const isSearchExpanded = className?.includes("justify-end");
+
   return (
     <div
       className={cn(
@@ -14,9 +16,11 @@ export function PageHeader({ title, children, className }: PageHeaderProps) {
         className
       )}
     >
-      <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-        {title}
-      </h2>
+      {!isSearchExpanded && (
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          {title}
+        </h2>
+      )}
 
       {children}
     </div>
